@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "FitForm",
+    "slug": "buildathon",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "jsEngine": "hermes",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "FitForm uses the camera for form feedback."
+      }
+    },
+    "android": {
+      "permissions": ["CAMERA"]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c5c8ea7d-4dc6-4465-ab25-c26c750436d6"
+      }
+    }
+  }
+}

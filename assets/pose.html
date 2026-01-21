@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FitForm Pose</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0b0e12;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+        color: #ffffff;
+      }
+      #stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      video,
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #controls {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 5;
+        display: flex;
+        gap: 8px;
+      }
+      button {
+        border: 1px solid rgba(44, 230, 193, 0.4);
+        background: rgba(10, 14, 18, 0.6);
+        color: #f5f7fa;
+        padding: 8px 12px;
+        border-radius: 16px;
+        cursor: pointer;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      button.active {
+        background: #2ce6c1;
+        color: #0b0e12;
+      }
+      #status {
+        position: absolute;
+        bottom: 16px;
+        left: 16px;
+        z-index: 5;
+        background: rgba(12, 16, 20, 0.7);
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <div id="controls">
+        <button data-exercise="squat" class="active">Squat</button>
+        <button data-exercise="pushup">Push-Up</button>
+      </div>
+      <video id="video" playsinline autoplay muted></video>
+      <canvas id="output"></canvas>
+      <div id="status">Initializing camera...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script>
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('output');
+      const ctx = canvas.getContext('2d');
+      const statusEl = document.getElementById('status');
+      const buttons = document.querySelectorAll('button[data-exercise]');
+
+      let exercise = 'squat';
+      let repCount = 0;
+      let phase = 'up';
+      let lastSent = 0;
+      let lastRepSent = -1;
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          buttons.forEach((btn) => btn.classList.remove('active'));
+          button.classList.add('active');
+          exercise = button.dataset.exercise;
+          repCount = 0;
+          phase = 'up';
+          statusEl.textContent = `Tracking ${exercise}`;
+          sendUpdate([]);
+        });
+      });
+
+      function angleBetween(a, b, c) {
+        const ab = { x: a.x - b.x, y: a.y - b.y };
+        const cb = { x: c.x - b.x, y: c.y - b.y };
+        const dot = ab.x * cb.x + ab.y * cb.y;
+        const mag = Math.sqrt(ab.x * ab.x + ab.y * ab.y) * Math.sqrt(cb.x * cb.x + cb.y * cb.y);
+        if (mag === 0) {
+          return 0;
+        }
+        let angle = Math.acos(Math.min(Math.max(dot / mag, -1), 1));
+        return (angle * 180) / Math.PI;
+      }
+
+      function sendUpdate(cues) {
+        const now = Date.now();
+        const shouldSend = repCount !== lastRepSent || now - lastSent > 400;
+        if (!shouldSend) {
+          return;
+        }
+        lastSent = now;
+        lastRepSent = repCount;
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              exercise: exercise === 'pushup' ? 'push-up' : 'squat',
+              repCount,
+              cues,
+            })
+          );
+        }
+      }
+
+      function analyzePose(landmarks) {
+        const leftShoulder = landmarks[11];
+        const leftElbow = landmarks[13];
+        const leftWrist = landmarks[15];
+        const leftHip = landmarks[23];
+        const leftKnee = landmarks[25];
+        const leftAnkle = landmarks[27];
+
+        if (!leftShoulder || !leftElbow || !leftWrist || !leftHip || !leftKnee || !leftAnkle) {
+          return [];
+        }
+
+        const kneeAngle = angleBetween(leftHip, leftKnee, leftAnkle);
+        const hipAngle = angleBetween(leftShoulder, leftHip, leftKnee);
+        const elbowAngle = angleBetween(leftShoulder, leftElbow, leftWrist);
+        const plankAngle = angleBetween(leftShoulder, leftHip, leftAnkle);
+        const cues = [];
+
+        if (exercise === 'squat') {
+          if (kneeAngle < 100 && phase === 'up') {
+            phase = 'down';
+          }
+          if (kneeAngle > 160 && phase === 'down') {
+            phase = 'up';
+            repCount += 1;
+          }
+
+          if (phase === 'down' && kneeAngle > 120) {
+            cues.push('Go lower for depth');
+          }
+          if (hipAngle < 140) {
+            cues.push('Keep chest tall');
+          }
+          if (kneeAngle < 80) {
+            cues.push('Nice depth');
+          }
+        }
+
+        if (exercise === 'pushup') {
+          if (elbowAngle < 100 && phase === 'up') {
+            phase = 'down';
+          }
+          if (elbowAngle > 160 && phase === 'down') {
+            phase = 'up';
+            repCount += 1;
+          }
+
+          if (phase === 'down' && elbowAngle > 120) {
+            cues.push('Lower chest toward hands');
+          }
+          if (plankAngle < 160) {
+            cues.push('Keep a straight body line');
+          }
+          if (elbowAngle < 80) {
+            cues.push('Full depth');
+          }
+        }
+
+        return cues.slice(0, 3);
+      }
+
+      function onResults(results) {
+        if (!results.image) {
+          return;
+        }
+        canvas.width = results.image.width;
+        canvas.height = results.image.height;
+        ctx.save();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+        if (results.poseLandmarks) {
+          drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
+            color: '#2CE6C1',
+            lineWidth: 4,
+          });
+          drawLandmarks(ctx, results.poseLandmarks, { color: '#FFFFFF', lineWidth: 2 });
+          const cues = analyzePose(results.poseLandmarks);
+          sendUpdate(cues);
+        }
+        ctx.restore();
+      }
+
+      const pose = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+      });
+      pose.setOptions({
+        modelComplexity: 0,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      });
+      pose.onResults(onResults);
+
+      const camera = new Camera(video, {
+        onFrame: async () => {
+          await pose.send({ image: video });
+        },
+        width: 720,
+        height: 1280,
+      });
+
+      camera
+        .start()
+        .then(() => {
+          statusEl.textContent = 'Tracking squat';
+        })
+        .catch((error) => {
+          statusEl.textContent = 'Camera permission required.';
+          console.error(error);
+        });
+    </script>
+  </body>
+</html>
