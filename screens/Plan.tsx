@@ -16,52 +16,21 @@ function getExerciseNames(workout: Workout) {
     .join(' | ');
 }
 
-const DAY_MAP: Record<number, string> = {
-  0: 'Sun',
-  1: 'Mon',
-  2: 'Tue',
-  3: 'Wed',
-  4: 'Thu',
-  5: 'Fri',
-  6: 'Sat',
-};
-
-function pickTodaysWorkout(plan: WeeklyPlan | null): Workout | null {
-  if (!plan || plan.workouts.length === 0) {
-    return null;
-  }
-  const todayLabel = DAY_MAP[new Date().getDay()];
-  return plan.workouts.find((workout) => workout.dayLabel === todayLabel) || plan.workouts[0];
-}
-
 export default function Plan() {
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const todayWorkout = pickTodaysWorkout(plan);
 
   const loadData = useCallback(async () => {
     const storedPlan = await AsyncStorage.getItem(STORAGE_KEYS.plan);
     const storedProfile = await AsyncStorage.getItem(STORAGE_KEYS.profile);
-
-    if (storedPlan) {
-      setPlan(JSON.parse(storedPlan));
-    }
-
-    if (storedProfile) {
-      setProfile(JSON.parse(storedProfile));
-    }
+    if (storedPlan) setPlan(JSON.parse(storedPlan));
+    if (storedProfile) setProfile(JSON.parse(storedProfile));
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadData();
-    }, [loadData])
-  );
+  useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
 
   const regeneratePlan = async () => {
-    if (!profile) {
-      return;
-    }
+    if (!profile) return;
     const newPlan = generateWeeklyPlan(profile);
     await AsyncStorage.setItem(STORAGE_KEYS.plan, JSON.stringify(newPlan));
     setPlan(newPlan);
@@ -70,31 +39,41 @@ export default function Plan() {
   return (
     <ScreenBackground>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Weekly Plan</Text>
-        <Text style={styles.subtitle}>Simple structure you can follow this week.</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>TRAINING CYCLE</Text>
+          <Text style={styles.subtitle}>Optimized for your goal and equipment.</Text>
+        </View>
 
-        {todayWorkout && (
-          <View style={styles.todayCard}>
-            <Text style={styles.todayLabel}>Today</Text>
-            <Text style={styles.todayTitle}>{todayWorkout.title}</Text>
-            <Text style={styles.todayDetail}>{getExerciseNames(todayWorkout)}</Text>
+        <View style={styles.summaryBox}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>EXPERIENCE</Text>
+            <Text style={styles.summaryValue}>{profile?.experience?.toUpperCase() || '---'}</Text>
+          </View>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>GOAL</Text>
+            <Text style={styles.summaryValue}>{profile?.goal?.toUpperCase() || '---'}</Text>
+          </View>
+        </View>
+
+        {plan?.workouts.length ? (
+          <View style={styles.list}>
+            {plan.workouts.map((workout) => (
+              <PlanCard
+                key={workout.id}
+                workout={workout}
+                exerciseLabels={getExerciseNames(workout)}
+              />
+            ))}
+          </View>
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Protocol not initialized.</Text>
           </View>
         )}
 
-      {plan?.workouts.length ? (
-        plan.workouts.map((workout) => (
-          <PlanCard
-            key={workout.id}
-            workout={workout}
-            exerciseLabels={getExerciseNames(workout)}
-          />
-        ))
-      ) : (
-        <Text style={styles.emptyText}>Complete onboarding to see your plan.</Text>
-      )}
-
         <Pressable style={styles.regen} onPress={regeneratePlan}>
-          <Text style={styles.regenText}>Regenerate Plan</Text>
+          <Text style={styles.regenText}>RECALIBRATE PLAN</Text>
         </Pressable>
       </ScrollView>
     </ScreenBackground>
@@ -104,73 +83,81 @@ export default function Plan() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    flexGrow: 1,
-    paddingTop: 36,
+    paddingTop: 50,
     paddingBottom: 40,
   },
+  header: {
+    marginBottom: 24,
+  },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 8,
     fontFamily: FONT.heading,
+    letterSpacing: 1.5,
   },
   subtitle: {
     color: COLORS.textMuted,
-    marginBottom: 16,
+    fontSize: 14,
     fontFamily: FONT.body,
+    marginTop: 4,
   },
-  regen: {
-    marginTop: 10,
-    alignItems: 'center',
-    paddingVertical: 12,
+  summaryBox: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(26, 30, 35, 0.6)',
     borderRadius: RADIUS.md,
+    padding: 16,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: COLORS.accentStrong,
-    backgroundColor: 'transparent',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
-  regenText: {
-    color: COLORS.accentStrong,
-    fontWeight: '600',
-    fontFamily: FONT.heading,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  summaryItem: {
+    flex: 1,
+    alignItems: 'center',
   },
-  todayCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 5,
+  summaryDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    marginHorizontal: 16,
   },
-  todayLabel: {
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  summaryLabel: {
+    fontSize: 10,
     color: COLORS.textDim,
-    fontFamily: FONT.body,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 4,
   },
-  todayTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginTop: 6,
+  summaryValue: {
+    fontSize: 13,
+    color: COLORS.accent,
+    fontWeight: '700',
     fontFamily: FONT.heading,
   },
-  todayDetail: {
-    color: COLORS.textMuted,
-    marginTop: 6,
-    fontFamily: FONT.body,
+  list: {
+    marginBottom: 24,
+  },
+  emptyContainer: {
+    paddingVertical: 60,
+    alignItems: 'center',
   },
   emptyText: {
-    color: COLORS.textMuted,
-    marginVertical: 20,
+    color: COLORS.textDim,
     fontFamily: FONT.body,
+    fontSize: 14,
+  },
+  regen: {
+    backgroundColor: 'transparent',
+    paddingVertical: 16,
+    borderRadius: RADIUS.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(44, 230, 193, 0.3)',
+  },
+  regenText: {
+    color: COLORS.accent,
+    fontSize: 14,
+    fontWeight: '900',
+    fontFamily: FONT.heading,
+    letterSpacing: 1.5,
   },
 });

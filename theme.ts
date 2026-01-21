@@ -1,21 +1,22 @@
 import { Platform } from 'react-native';
 
 export const COLORS = {
-  background: '#0B0E12',
-  backgroundAlt: '#11161C',
-  surface: '#151B21',
-  surfaceElevated: '#1B222A',
-  border: 'rgba(255, 255, 255, 0.08)',
-  accent: '#2CE6C1',
+  background: '#0B0D0F',
+  backgroundAlt: '#121518',
+  surface: '#1A1E23',
+  surfaceElevated: '#232930',
+  border: 'rgba(255, 255, 255, 0.05)',
+  accent: '#2CE6C1', // Neon Mint
   accentStrong: '#35F2A6',
-  text: '#F5F7FA',
-  textMuted: '#9AA4AE',
-  textDim: '#6E7781',
-  chip: 'rgba(255, 255, 255, 0.08)',
-  overlay: 'rgba(6, 8, 10, 0.7)',
+  accentGlow: 'rgba(44, 230, 193, 0.4)',
+  text: '#FFFFFF',
+  textMuted: '#A0AEC0',
+  textDim: '#718096',
+  chip: 'rgba(44, 230, 193, 0.1)',
+  overlay: 'rgba(0, 0, 0, 0.85)',
 };
 
-export const GRADIENT = ['#0B0E12', '#111820', '#0D1217'];
+export const GRADIENT = ['#0B0D0F', '#15191E', '#0B0D0F'];
 
 export const FONT = {
   heading: Platform.select({
@@ -36,8 +37,8 @@ export const FONT = {
 };
 
 export const RADIUS = {
-  sm: 10,
-  md: 16,
-  lg: 22,
-  xl: 28,
+  sm: 8,
+  md: 12,
+  lg: 20,
+  xl: 32,
 };

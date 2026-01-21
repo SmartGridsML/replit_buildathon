@@ -11,7 +11,10 @@ interface ExerciseCardProps {
 export default function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <Image source={{ uri: exercise.image }} style={styles.image} />
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: exercise.image }} style={styles.image} />
+        <View style={styles.imageOverlay} />
+      </View>
       <View style={styles.content}>
         <Text style={styles.name}>{exercise.name}</Text>
         <Text style={styles.description} numberOfLines={2}>
@@ -19,9 +22,9 @@ export default function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
         </Text>
         <View style={styles.tagRow}>
           {exercise.tags.slice(0, 2).map((tag) => (
-            <Text key={tag} style={styles.tag}>
-              {tag}
-            </Text>
+            <View key={tag} style={styles.tagBadge}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
           ))}
         </View>
       </View>
@@ -32,52 +35,65 @@ export default function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(26, 30, 35, 0.6)',
     borderRadius: RADIUS.lg,
-    marginBottom: 12,
+    marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    elevation: 4,
+    ...(Platform.OS === 'web' && { backdropFilter: 'blur(10px)' }),
+  },
+  imageContainer: {
+    position: 'relative',
+    width: 120,
+    height: 120,
   },
   image: {
-    width: 110,
-    height: 110,
+    width: '100%',
+    height: '100%',
+  },
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(11, 13, 15, 0.2)',
   },
   content: {
     flex: 1,
-    padding: 12,
+    padding: 14,
+    justifyContent: 'center',
   },
   name: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
+    letterSpacing: 0.5,
   },
   description: {
     fontSize: 13,
     color: COLORS.textMuted,
-    marginTop: 6,
+    marginTop: 4,
     fontFamily: FONT.body,
+    lineHeight: 18,
   },
   tagRow: {
     flexDirection: 'row',
-    marginTop: 8,
+    marginTop: 10,
   },
-  tag: {
-    backgroundColor: 'rgba(44, 230, 193, 0.14)',
+  tagBadge: {
+    backgroundColor: COLORS.chip,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-    fontSize: 11,
-    color: COLORS.accentStrong,
-    marginRight: 6,
+    paddingVertical: 3,
+    borderRadius: RADIUS.sm,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(44, 230, 193, 0.1)',
+  },
+  tagText: {
+    fontSize: 10,
+    color: COLORS.accent,
+    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    fontFamily: FONT.body,
+    letterSpacing: 1,
+    fontFamily: FONT.heading,
   },
 });

@@ -21,22 +21,28 @@ function Tabs() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: COLORS.backgroundAlt,
-          borderTopColor: COLORS.border,
+          backgroundColor: 'rgba(18, 21, 24, 0.95)',
+          borderTopWidth: 1,
+          borderTopColor: 'rgba(255, 255, 255, 0.05)',
+          paddingTop: 8,
+          height: 64,
+          elevation: 0,
         },
-        tabBarActiveTintColor: COLORS.accentStrong,
+        tabBarActiveTintColor: COLORS.accent,
         tabBarInactiveTintColor: COLORS.textDim,
         tabBarLabelStyle: {
-          fontFamily: FONT.body,
-          fontSize: 11,
-          letterSpacing: 0.5,
+          fontFamily: FONT.heading,
+          fontSize: 10,
+          fontWeight: '800',
+          letterSpacing: 1,
+          marginBottom: 8,
         },
       }}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Plan" component={Plan} />
-      <Tab.Screen name="Library" component={Library} />
-      <Tab.Screen name="FormCoach" component={FormCoach} options={{ title: 'Form Coach' }} />
+      <Tab.Screen name="Plan" component={Plan} options={{ title: 'PROTOCOL' }} />
+      <Tab.Screen name="Library" component={Library} options={{ title: 'ARCHIVE' }} />
+      <Tab.Screen name="FormCoach" component={FormCoach} options={{ title: 'COACH' }} />
     </Tab.Navigator>
   );
 }
