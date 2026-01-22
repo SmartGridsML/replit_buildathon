@@ -3,7 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Onboarding from '../screens/Onboarding';
 import Home from '../screens/Home';
 import Plan from '../screens/Plan';
@@ -24,6 +25,9 @@ const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
 );
 
 function Tabs() {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 8);
+  
   return (
     <Tab.Navigator
       screenOptions={{
@@ -32,16 +36,16 @@ function Tabs() {
           backgroundColor: COLORS.white,
           borderTopWidth: 1,
           borderTopColor: COLORS.borderLight,
-          paddingTop: 6,
-          paddingBottom: 6,
-          height: 65,
+          paddingTop: 8,
+          paddingBottom: bottomPadding,
+          height: 60 + bottomPadding,
           elevation: 0,
         },
         tabBarActiveTintColor: COLORS.accent,
         tabBarInactiveTintColor: COLORS.textMuted,
         tabBarLabelStyle: {
           fontFamily: FONT.body,
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: '600',
           marginTop: 2,
         },
