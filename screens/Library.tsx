@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, Modal, Pressable, Image, Dimensions } from 'react-native';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Modal, Image, Dimensions, Animated, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ExerciseCard from '../components/ExerciseCard';
+import AnimatedPressable from '../components/AnimatedPressable';
 import { EXERCISES } from '../data/exercises';
 import { Exercise } from '../types';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
@@ -17,8 +19,38 @@ const CATEGORIES = [
 ];
 
 export default function Library() {
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<Exercise | null>(null);
   const [activeFilter, setActiveFilter] = useState('all');
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const modalAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 6,
+      }),
+    ]).start();
+  }, []);
+
+  useEffect(() => {
+    Animated.spring(modalAnim, {
+      toValue: selected ? 1 : 0,
+      useNativeDriver: true,
+      speed: 14,
+      bounciness: 4,
+    }).start();
+  }, [selected]);
 
   const filteredExercises = useMemo(() => {
     if (activeFilter === 'all') return EXERCISES;
@@ -27,7 +59,7 @@ export default function Library() {
 
   return (
     <ScreenBackground>
-      <View style={styles.container}>
+      <Animated.View style={[styles.container, { paddingTop: Math.max(insets.top, 20) + 40, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         <View style={styles.header}>
           <Text style={styles.title}>Exercise Library</Text>
           <Text style={styles.subtitle}>Learn proper form for each exercise</Text>
@@ -35,7 +67,7 @@ export default function Library() {
 
         <View style={styles.filterRow}>
           {CATEGORIES.map(cat => (
-            <Pressable
+            <AnimatedPressable
               key={cat.value}
               style={[styles.filterChip, activeFilter === cat.value && styles.filterChipActive]}
               onPress={() => setActiveFilter(cat.value)}
@@ -43,15 +75,17 @@ export default function Library() {
               <Text style={[styles.filterText, activeFilter === cat.value && styles.filterTextActive]}>
                 {cat.label}
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           ))}
         </View>
 
         <FlatList
           data={filteredExercises}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ExerciseCard exercise={item} onPress={() => setSelected(item)} />
+          renderItem={({ item, index }) => (
+            <AnimatedListItem index={index}>
+              <ExerciseCard exercise={item} onPress={() => setSelected(item)} />
+            </AnimatedListItem>
           )}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
@@ -64,36 +98,66 @@ export default function Library() {
 
         {selected && (
           <Modal animationType="fade" transparent visible>
-            <View style={styles.modalBackdrop}>
-              <View style={styles.modalCard}>
+            <View style={styles.glassBackdrop}>
+              <View style={styles.glassCard}>
                 <View style={styles.modalImageContainer}>
                   <Image source={{ uri: selected.image }} style={styles.modalImage} />
-                  <Pressable style={styles.closeButton} onPress={() => setSelected(null)}>
+                  <AnimatedPressable style={styles.closeButton} onPress={() => setSelected(null)}>
                     <Text style={styles.closeText}>×</Text>
-                  </Pressable>
+                  </AnimatedPressable>
                 </View>
                 
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>{selected.name}</Text>
-                  <View style={styles.modalTagRow}>
+                <View style={styles.glassContent}>
+                  <Text style={styles.glassTitle}>{selected.name}</Text>
+                  <View style={styles.glassTagRow}>
                     {selected.tags.map(tag => (
-                      <View key={tag} style={styles.modalTag}>
-                        <Text style={styles.modalTagText}>{tag}</Text>
+                      <View key={tag} style={styles.glassTag}>
+                        <Text style={styles.glassTagText}>{tag}</Text>
                       </View>
                     ))}
                   </View>
-                  <Text style={styles.modalDescription}>{selected.description}</Text>
+                  <Text style={styles.glassDescription}>{selected.description}</Text>
                   
-                  <Pressable style={styles.dismissButton} onPress={() => setSelected(null)}>
-                    <Text style={styles.dismissButtonText}>Close</Text>
-                  </Pressable>
+                  <AnimatedPressable style={styles.glassButton} onPress={() => setSelected(null)}>
+                    <Text style={styles.glassButtonText}>Close</Text>
+                  </AnimatedPressable>
                 </View>
               </View>
             </View>
           </Modal>
         )}
-      </View>
+      </Animated.View>
     </ScreenBackground>
+  );
+}
+
+function AnimatedListItem({ children, index }: { children: React.ReactNode; index: number }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    const delay = Math.min(index * 50, 300);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        delay,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 6,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+      {children}
+    </Animated.View>
   );
 }
 
@@ -214,6 +278,72 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     flexWrap: 'wrap',
     gap: 8,
+  },
+  glassBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  glassCard: {
+    backgroundColor: 'rgba(26, 26, 26, 0.95)',
+    borderRadius: RADIUS.xl,
+    width: '100%',
+    maxWidth: 400,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    ...SHADOWS.lg,
+  },
+  glassContent: {
+    padding: 24,
+  },
+  glassTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.white,
+    fontFamily: FONT.heading,
+  },
+  glassTagRow: {
+    flexDirection: 'row',
+    marginTop: 12,
+    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  glassTag: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  glassTagText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  glassDescription: {
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontFamily: FONT.body,
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  glassButton: {
+    backgroundColor: COLORS.white,
+    paddingVertical: 16,
+    borderRadius: RADIUS.full,
+    alignItems: 'center',
+  },
+  glassButtonText: {
+    color: COLORS.accent,
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: FONT.body,
   },
   modalTag: {
     backgroundColor: COLORS.surfaceElevated,

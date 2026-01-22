@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Equipment, Experience, Goal, Injury, UserProfile } from '../types';
 import { generateWeeklyPlan } from '../data/planGenerator';
 import { STORAGE_KEYS } from '../data/storage';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
+import AnimatedPressable from '../components/AnimatedPressable';
 
 const GOALS: { label: string; value: Goal }[] = [
   { label: 'Strength', value: 'strength' },
@@ -32,11 +34,31 @@ const INJURIES: { label: string; value: Injury }[] = [
 
 export default function Onboarding() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [goal, setGoal] = useState<Goal | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [experience, setExperience] = useState<Experience | null>(null);
   const [injuries, setInjuries] = useState<Injury[]>([]);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 10,
+        bounciness: 6,
+      }),
+    ]).start();
+  }, []);
 
   const toggleInjury = (injury: Injury) => {
     setInjuries((prev) =>
@@ -62,7 +84,7 @@ export default function Onboarding() {
         {options.map((opt: any) => {
           const isActive = isMulti ? current.includes(opt.value) : current === opt.value;
           return (
-            <Pressable
+            <AnimatedPressable
               key={opt.value}
               style={[styles.option, isActive && styles.optionActive]}
               onPress={() => onSelect(opt.value)}
@@ -70,7 +92,7 @@ export default function Onboarding() {
               <Text style={[styles.optionText, isActive && styles.optionTextActive]}>
                 {opt.label}
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           );
         })}
       </View>
@@ -79,7 +101,11 @@ export default function Onboarding() {
 
   return (
     <ScreenBackground>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 20) + 40 }]} 
+        showsVerticalScrollIndicator={false}
+        style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>FitForm</Text>
           <Text style={styles.subtitle}>Stay healthy and strong</Text>
@@ -108,14 +134,14 @@ export default function Onboarding() {
         <SelectionGroup title="Experience Level" options={EXPERIENCE} current={experience} onSelect={setExperience} />
         <SelectionGroup title="Any Injuries?" options={INJURIES} current={injuries} onSelect={toggleInjury} isMulti />
 
-        <Pressable
+        <AnimatedPressable
           style={[styles.signUpButton, !canContinue && styles.buttonDisabled]}
           onPress={handleContinue}
           disabled={!canContinue}
         >
           <Text style={styles.signUpButtonText}>Get Started</Text>
-        </Pressable>
-      </ScrollView>
+        </AnimatedPressable>
+      </Animated.ScrollView>
     </ScreenBackground>
   );
 }

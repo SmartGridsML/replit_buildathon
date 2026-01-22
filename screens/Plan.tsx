@@ -1,11 +1,13 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WeeklyPlan, UserProfile, Workout } from '../types';
 import { STORAGE_KEYS } from '../data/storage';
 import { generateWeeklyPlan } from '../data/planGenerator';
 import PlanCard from '../components/PlanCard';
+import AnimatedPressable from '../components/AnimatedPressable';
 import { EXERCISES } from '../data/exercises';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
@@ -18,8 +20,28 @@ function getExerciseNames(workout: Workout) {
 
 export default function Plan() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 6,
+      }),
+    ]).start();
+  }, []);
 
   const loadData = useCallback(async () => {
     const storedPlan = await AsyncStorage.getItem(STORAGE_KEYS.plan);
@@ -43,7 +65,11 @@ export default function Plan() {
 
   return (
     <ScreenBackground>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 20) + 40 }]} 
+        showsVerticalScrollIndicator={false}
+        style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Weekly Plan</Text>
           <Text style={styles.subtitle}>Your personalized workout schedule</Text>
@@ -62,9 +88,10 @@ export default function Plan() {
 
         {plan?.workouts.length ? (
           <View style={styles.list}>
-            {plan.workouts.map((workout) => (
-              <PlanCard
-                key={workout.id}
+            {plan.workouts.map((workout, index) => (
+              <AnimatedPlanCard 
+                key={workout.id} 
+                index={index}
                 workout={workout}
                 exerciseLabels={getExerciseNames(workout)}
                 onStart={() => startWorkout(workout)}
@@ -79,11 +106,45 @@ export default function Plan() {
           </View>
         )}
 
-        <Pressable style={styles.regenButton} onPress={regeneratePlan}>
+        <AnimatedPressable style={styles.regenButton} onPress={regeneratePlan}>
           <Text style={styles.regenText}>Regenerate Plan</Text>
-        </Pressable>
-      </ScrollView>
+        </AnimatedPressable>
+      </Animated.ScrollView>
     </ScreenBackground>
+  );
+}
+
+function AnimatedPlanCard({ workout, exerciseLabels, onStart, index }: { workout: Workout; exerciseLabels: string; onStart: () => void; index: number }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(25)).current;
+
+  useEffect(() => {
+    const delay = 100 + index * 80;
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 350,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        delay,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 6,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+      <PlanCard
+        workout={workout}
+        exerciseLabels={exerciseLabels}
+        onStart={onStart}
+      />
+    </Animated.View>
   );
 }
 

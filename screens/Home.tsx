@@ -1,13 +1,15 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UserProfile, WeeklyPlan, Workout } from '../types';
 import { STORAGE_KEYS } from '../data/storage';
 import { EXERCISES } from '../data/exercises';
 import { loadUserStats, getLevelFromXP, UserStats } from '../data/gamification';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
+import AnimatedPressable from '../components/AnimatedPressable';
 
 const DAY_MAP: Record<number, string> = {
   0: 'Sun',
@@ -75,6 +77,7 @@ function getGreeting(): string {
 
 export default function Home() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
@@ -82,6 +85,33 @@ export default function Home() {
   const [weeklyProgress, setWeeklyProgress] = useState(0);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [levelInfo, setLevelInfo] = useState({ level: 1, title: 'Beginner', progress: 0, nextLevelXP: 100 });
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const heroScale = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 6,
+      }),
+      Animated.spring(heroScale, {
+        toValue: 1,
+        delay: 150,
+        useNativeDriver: true,
+        speed: 10,
+        bounciness: 8,
+      }),
+    ]).start();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -126,16 +156,24 @@ export default function Home() {
   const todayWorkout = pickTodaysWorkout(plan);
   const userName = profile?.name || 'there';
 
+  const exerciseChips = todayWorkout?.exerciseIds.slice(0, 4).map(id => 
+    EXERCISES.find(e => e.id === id)?.name || id
+  ) || [];
+
   return (
     <ScreenBackground>
-      <ScrollView style={styles.root} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        style={[styles.root, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]} 
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 20) + 40 }]} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <View style={styles.greetingRow}>
             <View>
               <Text style={styles.greeting}>Hi {userName} 👋</Text>
               <Text style={styles.subGreeting}>{getGreeting()}</Text>
             </View>
-            <Pressable 
+            <AnimatedPressable 
               style={styles.levelBadge}
               onPress={() => (navigation as any).navigate('Achievements')}
               accessibilityLabel={`Level ${levelInfo.level}, ${stats?.totalXP || 0} XP. Tap to view achievements`}
@@ -143,11 +181,11 @@ export default function Home() {
             >
               <Text style={styles.levelNumber}>{levelInfo.level}</Text>
               <Text style={styles.levelXP}>{stats?.totalXP || 0} XP</Text>
-            </Pressable>
+            </AnimatedPressable>
           </View>
         </View>
 
-        <Pressable 
+        <AnimatedPressable 
           style={styles.xpCard}
           onPress={() => (navigation as any).navigate('Achievements')}
           accessibilityLabel="View your progress and achievements"
@@ -166,7 +204,7 @@ export default function Home() {
               : 'Max Level!'
             }
           </Text>
-        </Pressable>
+        </AnimatedPressable>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
@@ -196,18 +234,34 @@ export default function Home() {
           </Text>
         </View>
 
-        <View style={styles.todayCard}>
-          <View style={styles.todayHeader}>
-            <Text style={styles.todayLabel}>Today's Workout</Text>
-            <Text style={styles.todayDay}>{todayWorkout?.dayLabel || 'Ready'}</Text>
+        <Animated.View style={[styles.heroCard, { transform: [{ scale: heroScale }] }]}>
+          <View style={styles.heroHeader}>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeText}>TODAY</Text>
+            </View>
+            <Text style={styles.heroDay}>{todayWorkout?.dayLabel || 'Ready'}</Text>
           </View>
-          <Text style={styles.todayTitle}>{todayWorkout?.title || 'Get Started'}</Text>
-          <Text style={styles.todayExercises}>
-            {todayWorkout ? getWorkoutLabel(todayWorkout) : 'Complete onboarding to see your plan'}
-          </Text>
-        </View>
+          <Text style={styles.heroTitle}>{todayWorkout?.title || 'Get Started'}</Text>
+          {exerciseChips.length > 0 && (
+            <View style={styles.chipRow}>
+              {exerciseChips.map((name, i) => (
+                <View key={i} style={styles.exerciseChip}>
+                  <Text style={styles.chipText}>{name}</Text>
+                </View>
+              ))}
+              {(todayWorkout?.exerciseIds.length || 0) > 4 && (
+                <View style={styles.exerciseChip}>
+                  <Text style={styles.chipText}>+{(todayWorkout?.exerciseIds.length || 0) - 4}</Text>
+                </View>
+              )}
+            </View>
+          )}
+          {!todayWorkout && (
+            <Text style={styles.heroSubtext}>Complete onboarding to see your plan</Text>
+          )}
+        </Animated.View>
 
-        <Pressable
+        <AnimatedPressable
           style={[styles.primaryButton, !todayWorkout && styles.buttonDisabled]}
           onPress={() => {
             if (todayWorkout) {
@@ -220,7 +274,7 @@ export default function Home() {
           accessibilityState={{ disabled: !todayWorkout }}
         >
           <Text style={styles.primaryButtonText}>Start Workout</Text>
-        </Pressable>
+        </AnimatedPressable>
 
         <View style={styles.tipCard}>
           <Text style={styles.tipIcon}>💡</Text>
@@ -231,7 +285,7 @@ export default function Home() {
             </Text>
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </ScreenBackground>
   );
 }
@@ -482,5 +536,65 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontFamily: FONT.body,
     lineHeight: 18,
+  },
+  heroCard: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.xl,
+    padding: 24,
+    marginBottom: 16,
+    ...SHADOWS.lg,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  heroBadge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: RADIUS.full,
+  },
+  heroBadgeText: {
+    color: COLORS.white,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  heroDay: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  heroTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.white,
+    fontFamily: FONT.heading,
+    marginBottom: 16,
+  },
+  heroSubtext: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    fontFamily: FONT.body,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  exerciseChip: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  chipText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

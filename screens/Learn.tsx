@@ -1,17 +1,39 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Modal, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LEARN_TOPICS, LEARN_CATEGORIES } from '../data/learnContent';
 import { LearnTopic } from '../types';
 import { recordTopicRead } from '../data/gamification';
 import { STORAGE_KEYS } from '../data/storage';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
+import AnimatedPressable from '../components/AnimatedPressable';
 
 export default function Learn() {
+  const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTopic, setSelectedTopic] = useState<LearnTopic | null>(null);
   const [readTopics, setReadTopics] = useState<string[]>([]);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 12,
+        bounciness: 6,
+      }),
+    ]).start();
+  }, []);
 
   useEffect(() => {
     const loadReadTopics = async () => {
@@ -39,7 +61,11 @@ export default function Learn() {
 
   return (
     <ScreenBackground>
-      <ScrollView style={styles.root} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        style={[styles.root, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]} 
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 20) + 40 }]} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Learn</Text>
           <Text style={styles.subtitle}>Understand your body</Text>
@@ -55,7 +81,7 @@ export default function Learn() {
           contentContainerStyle={styles.filterContainer}
         >
           {LEARN_CATEGORIES.map(category => (
-            <Pressable
+            <AnimatedPressable
               key={category.id}
               style={[
                 styles.filterChip,
@@ -72,13 +98,13 @@ export default function Learn() {
               ]}>
                 {category.label}
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           ))}
         </ScrollView>
 
         <View style={styles.topicsGrid}>
           {filteredTopics.map(topic => (
-            <Pressable
+            <AnimatedPressable
               key={topic.id}
               style={[styles.topicCard, isTopicRead(topic.id) && styles.topicCardRead]}
               onPress={() => handleOpenTopic(topic)}
@@ -100,10 +126,10 @@ export default function Learn() {
                   {isTopicRead(topic.id) ? 'Read again' : 'Read more →'}
                 </Text>
               </View>
-            </Pressable>
+            </AnimatedPressable>
           ))}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <Modal
         visible={!!selectedTopic}
@@ -113,9 +139,9 @@ export default function Learn() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Pressable onPress={() => setSelectedTopic(null)} style={styles.closeButton}>
+            <AnimatedPressable onPress={() => setSelectedTopic(null)} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>← Back</Text>
-            </Pressable>
+            </AnimatedPressable>
             {selectedTopic && isTopicRead(selectedTopic.id) && (
               <View style={styles.xpEarnedBadge}>
                 <Text style={styles.xpEarnedText}>+10 XP earned</Text>
