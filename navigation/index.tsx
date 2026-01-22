@@ -15,6 +15,10 @@ import { COLORS, FONT } from '../theme';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
+  <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>{icon}</Text>
+);
+
 function Tabs() {
   return (
     <Tab.Navigator
@@ -24,9 +28,9 @@ function Tabs() {
           backgroundColor: COLORS.white,
           borderTopWidth: 1,
           borderTopColor: COLORS.borderLight,
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 60,
+          paddingTop: 6,
+          paddingBottom: 6,
+          height: 65,
           elevation: 0,
         },
         tabBarActiveTintColor: COLORS.accent,
@@ -35,13 +39,38 @@ function Tabs() {
           fontFamily: FONT.body,
           fontSize: 11,
           fontWeight: '600',
+          marginTop: 2,
         },
       }}
     >
-      <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Plan" component={Plan} />
-      <Tab.Screen name="Library" component={Library} />
-      <Tab.Screen name="Coach" component={FormCoach} />
+      <Tab.Screen 
+        name="Home" 
+        component={Home}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
+        }}
+      />
+      <Tab.Screen 
+        name="Plan" 
+        component={Plan}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon icon="📋" focused={focused} />,
+        }}
+      />
+      <Tab.Screen 
+        name="Library" 
+        component={Library}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon icon="📚" focused={focused} />,
+        }}
+      />
+      <Tab.Screen 
+        name="Coach" 
+        component={FormCoach}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon icon="🎯" focused={focused} />,
+        }}
+      />
     </Tab.Navigator>
   );
 }
