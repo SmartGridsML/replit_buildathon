@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, Animated, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Workout } from '../types';
 import { EXERCISES } from '../data/exercises';
 import { STORAGE_KEYS } from '../data/storage';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
+import AnimatedPressable from '../components/AnimatedPressable';
 
 interface RouteParams {
   workout: Workout;
@@ -15,6 +17,7 @@ interface RouteParams {
 export default function WorkoutSession() {
   const navigation = useNavigation();
   const route = useRoute();
+  const insets = useSafeAreaInsets();
   const { workout } = (route.params as RouteParams) || { workout: null };
 
   const exercises = workout?.exerciseIds.map(id => 
@@ -27,9 +30,15 @@ export default function WorkoutSession() {
   const [isRunning, setIsRunning] = useState(false);
   const [isResting, setIsResting] = useState(false);
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
+  
+  const progressAnim = useRef(new Animated.Value(1)).current;
 
   const currentExercise = exercises[currentIndex];
   const totalExercises = exercises.length;
+
+  useEffect(() => {
+    progressAnim.setValue(timer / maxTime);
+  }, [timer, maxTime]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -140,8 +149,8 @@ export default function WorkoutSession() {
       <ScreenBackground>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No workout selected</Text>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backButtonText}>Go Back</Text>
+          <Pressable style={styles.goBackButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.goBackButtonText}>Go Back</Text>
           </Pressable>
         </View>
       </ScreenBackground>
@@ -149,40 +158,63 @@ export default function WorkoutSession() {
   }
 
   const progress = timer / maxTime;
+  const progressDegrees = progress * 360;
+  const activeColor = isResting ? COLORS.textMuted : COLORS.accent;
 
   return (
     <ScreenBackground>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 20) + 40 }]} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
-          <Pressable onPress={() => navigation.goBack()}>
+          <AnimatedPressable onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backArrow}>←</Text>
-          </Pressable>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>{workout.title}</Text>
           <Text style={styles.headerProgress}>{currentIndex + 1}/{totalExercises}</Text>
         </View>
 
         <View style={styles.exerciseDisplay}>
           <Text style={styles.exerciseName}>
-            {isResting ? 'Rest' : currentExercise?.name || ''}
+            {isResting ? '😮‍💨 Rest' : currentExercise?.name || ''}
           </Text>
+          {!isResting && currentExercise && (
+            <Text style={styles.exerciseReps}>30 seconds</Text>
+          )}
         </View>
 
         <View style={styles.timerContainer}>
-          <View style={[
-            styles.timerRing,
-            { borderColor: isResting ? COLORS.textMuted : COLORS.accent }
-          ]}>
-            <View style={styles.timerContent}>
-              <Text style={styles.timerValue}>{timer}</Text>
-              <Text style={styles.timerUnit}>sec</Text>
+          <View style={styles.timerRing}>
+            <View style={[styles.timerTrack, { borderColor: COLORS.borderLight }]} />
+            <View 
+              style={[
+                styles.timerProgress,
+                { 
+                  borderColor: activeColor,
+                  borderRightColor: progressDegrees > 180 ? activeColor : 'transparent',
+                  borderBottomColor: progressDegrees > 90 ? activeColor : 'transparent',
+                  borderLeftColor: progressDegrees > 270 ? activeColor : 'transparent',
+                  transform: [{ rotate: '-90deg' }],
+                }
+              ]} 
+            />
+            <View style={styles.timerInner}>
+              <Text style={[styles.timerValue, { color: activeColor }]}>{timer}</Text>
+              <Text style={styles.timerUnit}>seconds</Text>
             </View>
-            <View style={[
-              styles.progressIndicator,
-              { 
-                backgroundColor: isResting ? COLORS.textMuted : COLORS.accent,
-                transform: [{ rotate: `${(1 - progress) * 360}deg` }]
-              }
-            ]} />
+            <View 
+              style={[
+                styles.progressDot,
+                { 
+                  backgroundColor: activeColor,
+                  transform: [
+                    { rotate: `${-90 + (1 - progress) * 360}deg` },
+                    { translateX: 90 },
+                  ],
+                }
+              ]} 
+            />
           </View>
         </View>
 
@@ -193,18 +225,18 @@ export default function WorkoutSession() {
         )}
 
         <View style={styles.controlsRow}>
-          <Pressable 
+          <AnimatedPressable 
             style={[styles.controlButton, styles.pauseButton]}
             onPress={toggleTimer}
           >
-            <Text style={styles.controlButtonText}>{isRunning ? 'Pause' : 'Start'}</Text>
-          </Pressable>
-          <Pressable 
+            <Text style={styles.controlButtonText}>{isRunning ? '⏸ Pause' : '▶ Start'}</Text>
+          </AnimatedPressable>
+          <AnimatedPressable 
             style={[styles.controlButton, styles.nextButton]}
             onPress={isResting ? skipRest : nextExercise}
           >
-            <Text style={styles.controlButtonTextDark}>{isResting ? 'Skip' : 'Next'}</Text>
-          </Pressable>
+            <Text style={styles.controlButtonTextDark}>{isResting ? 'Skip →' : 'Next →'}</Text>
+          </AnimatedPressable>
         </View>
 
         {!isResting && currentIndex < totalExercises - 1 && (
@@ -245,14 +277,16 @@ export default function WorkoutSession() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
+  },
+  backButton: {
+    padding: 8,
   },
   backArrow: {
     fontSize: 24,
@@ -268,56 +302,84 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     fontFamily: FONT.body,
+    backgroundColor: COLORS.surfaceElevated,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
   },
   exerciseDisplay: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
   },
   exerciseName: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
     textAlign: 'center',
   },
+  exerciseReps: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    fontFamily: FONT.body,
+    marginTop: 4,
+  },
   timerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   timerRing: {
     width: 200,
     height: 200,
-    borderRadius: 100,
-    borderWidth: 8,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden',
   },
-  timerContent: {
+  timerTrack: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 8,
+  },
+  timerProgress: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 8,
+    borderTopColor: 'currentColor',
+  },
+  timerInner: {
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.white,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    ...SHADOWS.sm,
   },
   timerValue: {
-    fontSize: 64,
-    fontWeight: '300',
-    color: COLORS.text,
+    fontSize: 56,
+    fontWeight: '700',
     fontFamily: FONT.heading,
   },
   timerUnit: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontSize: 14,
+    color: COLORS.textMuted,
     fontFamily: FONT.body,
-    marginTop: -8,
+    marginTop: -4,
   },
-  progressIndicator: {
+  progressDot: {
     position: 'absolute',
-    top: -4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    top: '50%',
     left: '50%',
-    marginLeft: -6,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    marginTop: -8,
+    marginLeft: -8,
   },
   cueContainer: {
     backgroundColor: COLORS.surfaceElevated,
@@ -449,13 +511,13 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginBottom: 16,
   },
-  backButton: {
+  goBackButton: {
     backgroundColor: COLORS.accent,
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: RADIUS.full,
   },
-  backButtonText: {
+  goBackButtonText: {
     color: COLORS.white,
     fontSize: 15,
     fontWeight: '600',
