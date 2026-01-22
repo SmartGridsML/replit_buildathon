@@ -1,0 +1,53 @@
+## Layout and Component Guidance
+Home
+- Hero card for Today with strong title + exercise chips.
+- Primary CTA with accent fill, secondary CTA with outlined surface.
+- Music and content links as pills/chips, not plain text.
+
+Plan
+- Today card is prominent and visually distinct.
+- Weekly cards are slim, tight spacing, and use accent to highlight focus.
+
+Library
+- Exercise cards with image left, text right, strong title.
+- Detail modal should feel like a glass panel (dark surface + border).
+
+FormCoach
+- Rep count large and centered.
+- Cues in a compact list; emphasize most important cue.
+- Overlay should feel like a HUD panel with glassy backdrop.
+
+Onboarding
+- Use pill buttons for choices with clear active state.
+- Keep flow fast, 1-2 lines per section.
+
+## Motion
+- Subtle fade + slide on screen load.
+- Staggered list reveals on Library and Plan.
+- CTA press feedback (scale down 0.98) for tactile feel.
+
+## Engineering Notes and Performance
+- MediaPipe in WebView is heavy; keep modelComplexity low and throttle messages.
+- Use requestAnimationFrame in pose loop if needed to reduce jitter.
+- Keep WebView messaging payload small (exercise, repCount, cues only).
+- Consider reducing overlay re-renders by memoizing cues UI.
+- Use FlatList for library (already done) and ensure keyExtractor is stable.
+
+## Code and Architecture Enhancements
+- Use SafeAreaView or padding for top/bottom to avoid notch overlap.
+- Add typed navigation params for safer navigation.
+- Extract shared styles and spacing constants to theme.
+- Add basic error handling for AsyncStorage reads/writes.
+- Add a small skeleton/loading state when plan is not ready.
+- Add offline fallback for MediaPipe by bundling scripts locally.
+
+## UX Improvements (optional)
+- Add a short onboarding success screen after plan creation.
+- Add a lightweight weekly progress indicator (dots or streak).
+- Offer an exercise switcher on FormCoach (squat/push-up) in RN UI.
+
+## Known Constraints
+- WebView uses CDN scripts and needs network access.
+- Accuracy of form cues is MVP-level only.
+- External image URLs depend on network.
+
