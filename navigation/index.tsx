@@ -8,6 +8,7 @@ import Onboarding from '../screens/Onboarding';
 import Home from '../screens/Home';
 import Plan from '../screens/Plan';
 import Library from '../screens/Library';
+import Learn from '../screens/Learn';
 import FormCoach from '../screens/FormCoach';
 import WorkoutSession from '../screens/WorkoutSession';
 import WorkoutComplete from '../screens/WorkoutComplete';
@@ -39,7 +40,7 @@ function Tabs() {
         tabBarInactiveTintColor: COLORS.textMuted,
         tabBarLabelStyle: {
           fontFamily: FONT.body,
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
           marginTop: 2,
         },
@@ -64,6 +65,13 @@ function Tabs() {
         component={Library}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon icon="📚" focused={focused} />,
+        }}
+      />
+      <Tab.Screen 
+        name="Learn" 
+        component={Learn}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon icon="🧠" focused={focused} />,
         }}
       />
       <Tab.Screen 

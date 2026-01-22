@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { Equipment, Experience, Goal, Injury, UserProfile } from '../types';
@@ -7,8 +7,6 @@ import { generateWeeklyPlan } from '../data/planGenerator';
 import { STORAGE_KEYS } from '../data/storage';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
-
-const { width } = Dimensions.get('window');
 
 const GOALS: { label: string; value: Goal }[] = [
   { label: 'Strength', value: 'strength' },
@@ -34,6 +32,7 @@ const INJURIES: { label: string; value: Injury }[] = [
 
 export default function Onboarding() {
   const navigation = useNavigation();
+  const [name, setName] = useState('');
   const [goal, setGoal] = useState<Goal | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [experience, setExperience] = useState<Experience | null>(null);
@@ -45,11 +44,11 @@ export default function Onboarding() {
     );
   };
 
-  const canContinue = goal && equipment && experience;
+  const canContinue = name.trim() && goal && equipment && experience;
 
   const handleContinue = async () => {
-    if (!goal || !equipment || !experience) return;
-    const profile: UserProfile = { goal, equipment, experience, injuries };
+    if (!name.trim() || !goal || !equipment || !experience) return;
+    const profile: UserProfile = { name: name.trim(), goal, equipment, experience, injuries };
     const plan = generateWeeklyPlan(profile);
     await AsyncStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile));
     await AsyncStorage.setItem(STORAGE_KEYS.plan, JSON.stringify(plan));
@@ -92,6 +91,18 @@ export default function Onboarding() {
           </View>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Your Name</Text>
+          <TextInput
+            style={styles.nameInput}
+            placeholder="Enter your name"
+            placeholderTextColor={COLORS.textMuted}
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+          />
+        </View>
+
         <SelectionGroup title="Your Goal" options={GOALS} current={goal} onSelect={setGoal} />
         <SelectionGroup title="Equipment Access" options={EQUIPMENT} current={equipment} onSelect={setEquipment} />
         <SelectionGroup title="Experience Level" options={EXPERIENCE} current={experience} onSelect={setExperience} />
@@ -102,10 +113,8 @@ export default function Onboarding() {
           onPress={handleContinue}
           disabled={!canContinue}
         >
-          <Text style={styles.signUpButtonText}>Sign up</Text>
+          <Text style={styles.signUpButtonText}>Get Started</Text>
         </Pressable>
-
-        <Text style={styles.footerText}>I have an account</Text>
       </ScrollView>
     </ScreenBackground>
   );
@@ -139,15 +148,15 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   illustration: {
-    width: 160,
-    height: 160,
+    width: 120,
+    height: 120,
     backgroundColor: COLORS.surfaceElevated,
-    borderRadius: 80,
+    borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
   illustrationEmoji: {
-    fontSize: 70,
+    fontSize: 56,
   },
   section: {
     marginBottom: 24,
@@ -157,6 +166,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textSecondary,
     marginBottom: 12,
+    fontFamily: FONT.body,
+  },
+  nameInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: COLORS.text,
     fontFamily: FONT.body,
   },
   optionsRow: {
@@ -200,13 +220,6 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: FONT.body,
-  },
-  footerText: {
-    textAlign: 'center',
-    marginTop: 16,
-    color: COLORS.textMuted,
-    fontSize: 14,
     fontFamily: FONT.body,
   },
 });

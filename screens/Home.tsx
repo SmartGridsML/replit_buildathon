@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { WeeklyPlan, Workout } from '../types';
+import { UserProfile, WeeklyPlan, Workout } from '../types';
 import { STORAGE_KEYS } from '../data/storage';
 import { EXERCISES } from '../data/exercises';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
@@ -65,26 +65,51 @@ function calculateStreak(completedWorkouts: any[]): number {
   return streak;
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export default function Home() {
   const navigation = useNavigation();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [weeklyProgress, setWeeklyProgress] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       const loadData = async () => {
+        const storedProfile = await AsyncStorage.getItem(STORAGE_KEYS.profile);
         const storedPlan = await AsyncStorage.getItem(STORAGE_KEYS.plan);
         const storedCompleted = await AsyncStorage.getItem(STORAGE_KEYS.completed);
         
-        if (storedPlan) {
-          setPlan(JSON.parse(storedPlan));
+        if (storedProfile) {
+          setProfile(JSON.parse(storedProfile));
         }
         
-        if (storedCompleted) {
-          const completed = JSON.parse(storedCompleted);
-          setCompletedCount(completed.length);
-          setStreak(calculateStreak(completed));
+        if (storedPlan) {
+          const planData = JSON.parse(storedPlan);
+          setPlan(planData);
+          
+          if (storedCompleted) {
+            const completed = JSON.parse(storedCompleted);
+            setCompletedCount(completed.length);
+            setStreak(calculateStreak(completed));
+            
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            
+            const thisWeekWorkouts = completed.filter((w: any) => 
+              new Date(w.completedAt).getTime() >= weekStart.getTime()
+            );
+            const weeklyTarget = planData.workouts?.length || 3;
+            setWeeklyProgress(Math.min(thisWeekWorkouts.length / weeklyTarget, 1));
+          }
         }
       };
       loadData();
@@ -92,36 +117,46 @@ export default function Home() {
   );
 
   const todayWorkout = pickTodaysWorkout(plan);
+  const userName = profile?.name || 'there';
 
   return (
     <ScreenBackground>
       <ScrollView style={styles.root} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>FitForm</Text>
-          <Text style={styles.subtitle}>Stay healthy and strong</Text>
+          <Text style={styles.greeting}>Hi {userName} 👋</Text>
+          <Text style={styles.subGreeting}>{getGreeting()}</Text>
         </View>
 
-        <View style={styles.progressRow}>
-          <View style={styles.progressCard}>
-            <Text style={styles.progressValue}>{completedCount}</Text>
-            <Text style={styles.progressLabel}>Workouts</Text>
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{completedCount}</Text>
+            <Text style={styles.statLabel}>Total Workouts</Text>
           </View>
-          <View style={styles.progressCard}>
-            <Text style={styles.progressValue}>{streak}</Text>
-            <Text style={styles.progressLabel}>Day Streak</Text>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{streak}</Text>
+            <Text style={styles.statLabel}>Day Streak 🔥</Text>
           </View>
-          <View style={styles.progressCard}>
-            <Text style={styles.progressValue}>💪</Text>
-            <Text style={styles.progressLabel}>Keep Going</Text>
+        </View>
+
+        <View style={styles.weeklyCard}>
+          <View style={styles.weeklyHeader}>
+            <Text style={styles.weeklyTitle}>Weekly Progress</Text>
+            <Text style={styles.weeklyPercent}>{Math.round(weeklyProgress * 100)}%</Text>
           </View>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${weeklyProgress * 100}%` }]} />
+          </View>
+          <Text style={styles.weeklySubtext}>
+            {plan ? `${Math.round(weeklyProgress * (plan.workouts?.length || 3))} of ${plan.workouts?.length || 3} workouts this week` : 'Start your first workout!'}
+          </Text>
         </View>
 
         <View style={styles.todayCard}>
           <View style={styles.todayHeader}>
             <Text style={styles.todayLabel}>Today's Workout</Text>
-            <Text style={styles.todayDay}>{todayWorkout?.dayLabel || 'Get Started'}</Text>
+            <Text style={styles.todayDay}>{todayWorkout?.dayLabel || 'Ready'}</Text>
           </View>
-          <Text style={styles.todayTitle}>{todayWorkout?.title || 'Morning Workout'}</Text>
+          <Text style={styles.todayTitle}>{todayWorkout?.title || 'Get Started'}</Text>
           <Text style={styles.todayExercises}>
             {todayWorkout ? getWorkoutLabel(todayWorkout) : 'Complete onboarding to see your plan'}
           </Text>
@@ -139,21 +174,14 @@ export default function Home() {
           <Text style={styles.primaryButtonText}>Start Workout</Text>
         </Pressable>
 
-        <View style={styles.quickActions}>
-          <Pressable
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('Plan' as never)}
-          >
-            <Text style={styles.actionIcon}>📅</Text>
-            <Text style={styles.actionLabel}>Weekly Plan</Text>
-          </Pressable>
-          <Pressable
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('Library' as never)}
-          >
-            <Text style={styles.actionIcon}>📚</Text>
-            <Text style={styles.actionLabel}>Exercise Library</Text>
-          </Pressable>
+        <View style={styles.tipCard}>
+          <Text style={styles.tipIcon}>💡</Text>
+          <View style={styles.tipContent}>
+            <Text style={styles.tipTitle}>Quick Tip</Text>
+            <Text style={styles.tipText}>
+              Consistency beats intensity. Even a 15-minute workout is better than skipping entirely.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </ScreenBackground>
@@ -170,56 +198,96 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    alignItems: 'center',
     marginBottom: 24,
   },
-  title: {
-    fontSize: 32,
+  greeting: {
+    fontSize: 28,
     fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
-    letterSpacing: -0.5,
   },
-  subtitle: {
+  subGreeting: {
+    fontSize: 14,
     color: COLORS.textSecondary,
-    fontSize: 16,
     fontFamily: FONT.body,
     marginTop: 4,
   },
-  progressRow: {
+  statsRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 24,
+    gap: 12,
+    marginBottom: 16,
   },
-  progressCard: {
+  statCard: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: RADIUS.md,
-    padding: 16,
+    borderRadius: RADIUS.lg,
+    padding: 20,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
     ...SHADOWS.sm,
   },
-  progressValue: {
-    fontSize: 24,
+  statValue: {
+    fontSize: 32,
     fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
   },
-  progressLabel: {
-    fontSize: 11,
+  statLabel: {
+    fontSize: 12,
     color: COLORS.textMuted,
     fontFamily: FONT.body,
     marginTop: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  },
+  weeklyCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  weeklyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  weeklyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontFamily: FONT.heading,
+  },
+  weeklyPercent: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.accent,
+    fontFamily: FONT.heading,
+  },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: COLORS.surfaceElevated,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: COLORS.accent,
+    borderRadius: 4,
+  },
+  weeklySubtext: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontFamily: FONT.body,
   },
   todayCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
     ...SHADOWS.md,
@@ -260,7 +328,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: RADIUS.full,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
     ...SHADOWS.md,
   },
   primaryButtonText: {
@@ -272,28 +340,31 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.4,
   },
-  quickActions: {
+  tipCard: {
+    backgroundColor: COLORS.surfaceElevated,
+    borderRadius: RADIUS.lg,
+    padding: 16,
     flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
   },
-  actionCard: {
+  tipIcon: {
+    fontSize: 24,
+  },
+  tipContent: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    padding: 20,
-    borderRadius: RADIUS.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.sm,
   },
-  actionIcon: {
-    fontSize: 28,
-    marginBottom: 8,
-  },
-  actionLabel: {
+  tipTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
+    fontFamily: FONT.heading,
+    marginBottom: 4,
+  },
+  tipText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
     fontFamily: FONT.body,
+    lineHeight: 19,
   },
 });

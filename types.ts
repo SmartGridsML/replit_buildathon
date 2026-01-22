@@ -4,6 +4,7 @@ export type Experience = 'beginner' | 'intermediate';
 export type Injury = 'knee' | 'shoulder' | 'back';
 
 export interface UserProfile {
+  name: string;
   goal: Goal;
   equipment: Equipment;
   experience: Experience;
@@ -16,6 +17,7 @@ export interface Exercise {
   description: string;
   image: string;
   tags: string[];
+  muscleGroups?: string[];
 }
 
 export interface Workout {
@@ -30,4 +32,13 @@ export interface WeeklyPlan {
   id: string;
   createdAt: string;
   workouts: Workout[];
+}
+
+export interface LearnTopic {
+  id: string;
+  title: string;
+  category: 'muscles' | 'injuries' | 'nutrition' | 'recovery';
+  icon: string;
+  summary: string;
+  content: string;
 }
