@@ -26,7 +26,7 @@ const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
 
 function Tabs() {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, 8);
+  const bottomPadding = Math.max(insets.bottom, 10);
   
   return (
     <Tab.Navigator
@@ -36,18 +36,25 @@ function Tabs() {
           backgroundColor: COLORS.white,
           borderTopWidth: 1,
           borderTopColor: COLORS.borderLight,
-          paddingTop: 8,
+          paddingTop: 10,
           paddingBottom: bottomPadding,
-          height: 60 + bottomPadding,
-          elevation: 0,
+          height: 70 + bottomPadding,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
         },
         tabBarActiveTintColor: COLORS.accent,
         tabBarInactiveTintColor: COLORS.textMuted,
         tabBarLabelStyle: {
           fontFamily: FONT.body,
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: '600',
-          marginTop: 2,
+          marginTop: 4,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
         },
       }}
     >

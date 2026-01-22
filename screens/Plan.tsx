@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 24,
     paddingTop: 60,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   header: {
     marginBottom: 24,
