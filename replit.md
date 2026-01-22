@@ -45,7 +45,7 @@ The app uses a **minimalist white and black** aesthetic:
 Key design elements:
 - Full-rounded (pill) buttons for primary actions
 - Subtle card shadows with light borders
-- Yoga/fitness emoji illustrations
+- Fitness/strength emoji illustrations
 - Clean section headers with muted labels
 
 ## Development Notes

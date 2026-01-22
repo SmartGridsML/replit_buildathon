@@ -31,7 +31,7 @@ export default function FormCoach() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Fitness & Yoga</Text>
+        <Text style={styles.headerTitle}>FitForm</Text>
         <Text style={styles.headerSubtitle}>Morning Workout</Text>
       </View>
 

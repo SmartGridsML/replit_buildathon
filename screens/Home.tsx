@@ -56,14 +56,14 @@ export default function Home() {
     <ScreenBackground>
       <ScrollView style={styles.root} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Fitness & Yoga</Text>
+          <Text style={styles.title}>FitForm</Text>
           <Text style={styles.subtitle}>Stay healthy and strong</Text>
         </View>
 
         <View style={styles.heroSection}>
           <View style={styles.illustrationContainer}>
-            <View style={styles.yogaIllustration}>
-              <Text style={styles.illustrationEmoji}>🧘‍♀️</Text>
+            <View style={styles.fitnessIllustration}>
+              <Text style={styles.illustrationEmoji}>💪</Text>
             </View>
           </View>
         </View>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  yogaIllustration: {
+  fitnessIllustration: {
     width: 180,
     height: 180,
     backgroundColor: COLORS.surfaceElevated,

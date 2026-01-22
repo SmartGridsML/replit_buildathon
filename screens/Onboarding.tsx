@@ -82,13 +82,13 @@ export default function Onboarding() {
     <ScreenBackground>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Fitness & Yoga</Text>
+          <Text style={styles.title}>FitForm</Text>
           <Text style={styles.subtitle}>Stay healthy and strong</Text>
         </View>
 
         <View style={styles.illustrationContainer}>
           <View style={styles.illustration}>
-            <Text style={styles.illustrationEmoji}>🧘‍♀️</Text>
+            <Text style={styles.illustrationEmoji}>🏋️</Text>
           </View>
         </View>
 
