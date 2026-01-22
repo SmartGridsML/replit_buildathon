@@ -16,7 +16,11 @@ export const COLORS = {
   white: '#FFFFFF',
   black: '#000000',
   success: '#22C55E',
+  successLight: '#DCFCE7',
   error: '#EF4444',
+  errorLight: '#FEE2E2',
+  warning: '#F59E0B',
+  warningLight: '#FEF3C7',
 };
 
 export const FONT = {

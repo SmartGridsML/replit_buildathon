@@ -12,6 +12,7 @@ import Learn from '../screens/Learn';
 import FormCoach from '../screens/FormCoach';
 import WorkoutSession from '../screens/WorkoutSession';
 import WorkoutComplete from '../screens/WorkoutComplete';
+import Achievements from '../screens/Achievements';
 import { STORAGE_KEYS } from '../data/storage';
 import { COLORS, FONT } from '../theme';
 
@@ -118,6 +119,7 @@ export default function Navigation() {
         <Stack.Screen name="Tabs" component={Tabs} />
         <Stack.Screen name="WorkoutSession" component={WorkoutSession} />
         <Stack.Screen name="WorkoutComplete" component={WorkoutComplete} />
+        <Stack.Screen name="Achievements" component={Achievements} />
       </Stack.Navigator>
     </NavigationContainer>
   );

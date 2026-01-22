@@ -5,6 +5,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { UserProfile, WeeklyPlan, Workout } from '../types';
 import { STORAGE_KEYS } from '../data/storage';
 import { EXERCISES } from '../data/exercises';
+import { loadUserStats, getLevelFromXP, UserStats } from '../data/gamification';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 
@@ -79,6 +80,8 @@ export default function Home() {
   const [completedCount, setCompletedCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [weeklyProgress, setWeeklyProgress] = useState(0);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [levelInfo, setLevelInfo] = useState({ level: 1, title: 'Beginner', progress: 0, nextLevelXP: 100 });
 
   useFocusEffect(
     useCallback(() => {
@@ -86,6 +89,10 @@ export default function Home() {
         const storedProfile = await AsyncStorage.getItem(STORAGE_KEYS.profile);
         const storedPlan = await AsyncStorage.getItem(STORAGE_KEYS.plan);
         const storedCompleted = await AsyncStorage.getItem(STORAGE_KEYS.completed);
+        const userStats = await loadUserStats();
+        
+        setStats(userStats);
+        setLevelInfo(getLevelFromXP(userStats.totalXP));
         
         if (storedProfile) {
           setProfile(JSON.parse(storedProfile));
@@ -123,18 +130,56 @@ export default function Home() {
     <ScreenBackground>
       <ScrollView style={styles.root} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.greeting}>Hi {userName} 👋</Text>
-          <Text style={styles.subGreeting}>{getGreeting()}</Text>
+          <View style={styles.greetingRow}>
+            <View>
+              <Text style={styles.greeting}>Hi {userName} 👋</Text>
+              <Text style={styles.subGreeting}>{getGreeting()}</Text>
+            </View>
+            <Pressable 
+              style={styles.levelBadge}
+              onPress={() => (navigation as any).navigate('Achievements')}
+              accessibilityLabel={`Level ${levelInfo.level}, ${stats?.totalXP || 0} XP. Tap to view achievements`}
+              accessibilityRole="button"
+            >
+              <Text style={styles.levelNumber}>{levelInfo.level}</Text>
+              <Text style={styles.levelXP}>{stats?.totalXP || 0} XP</Text>
+            </Pressable>
+          </View>
         </View>
+
+        <Pressable 
+          style={styles.xpCard}
+          onPress={() => (navigation as any).navigate('Achievements')}
+          accessibilityLabel="View your progress and achievements"
+          accessibilityRole="button"
+        >
+          <View style={styles.xpHeader}>
+            <Text style={styles.xpTitle}>{levelInfo.title}</Text>
+            <Text style={styles.xpAmount}>{stats?.totalXP || 0} XP</Text>
+          </View>
+          <View style={styles.xpProgressBg}>
+            <View style={[styles.xpProgressFill, { width: `${levelInfo.progress * 100}%` }]} />
+          </View>
+          <Text style={styles.xpSubtext}>
+            {levelInfo.level < 10 
+              ? `${levelInfo.nextLevelXP - (stats?.totalXP || 0)} XP to Level ${levelInfo.level + 1}`
+              : 'Max Level!'
+            }
+          </Text>
+        </Pressable>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{completedCount}</Text>
-            <Text style={styles.statLabel}>Total Workouts</Text>
+            <Text style={styles.statLabel}>Workouts</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{streak}</Text>
-            <Text style={styles.statLabel}>Day Streak 🔥</Text>
+            <Text style={styles.statValue}>{streak} 🔥</Text>
+            <Text style={styles.statLabel}>Day Streak</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats?.unlockedAchievements.length || 0}</Text>
+            <Text style={styles.statLabel}>Badges</Text>
           </View>
         </View>
 
@@ -170,6 +215,9 @@ export default function Home() {
             }
           }}
           disabled={!todayWorkout}
+          accessibilityLabel="Start today's workout"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !todayWorkout }}
         >
           <Text style={styles.primaryButtonText}>Start Workout</Text>
         </Pressable>
@@ -198,10 +246,15 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 20,
+  },
+  greetingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   greeting: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
@@ -210,39 +263,102 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     fontFamily: FONT.body,
-    marginTop: 4,
+    marginTop: 2,
+  },
+  levelBadge: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.md,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+  },
+  levelNumber: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.white,
+    fontFamily: FONT.heading,
+  },
+  levelXP: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.8)',
+    fontFamily: FONT.body,
+  },
+  xpCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  xpHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  xpTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontFamily: FONT.heading,
+  },
+  xpAmount: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.accent,
+    fontFamily: FONT.heading,
+  },
+  xpProgressBg: {
+    height: 6,
+    backgroundColor: COLORS.surfaceElevated,
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  xpProgressFill: {
+    height: '100%',
+    backgroundColor: COLORS.accent,
+    borderRadius: 3,
+  },
+  xpSubtext: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     marginBottom: 16,
   },
   statCard: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: 20,
+    borderRadius: RADIUS.md,
+    padding: 14,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
     ...SHADOWS.sm,
   },
   statValue: {
-    fontSize: 32,
+    fontSize: 22,
     fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: COLORS.textMuted,
     fontFamily: FONT.body,
-    marginTop: 4,
+    marginTop: 2,
+    textTransform: 'uppercase',
   },
   weeklyCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
-    padding: 20,
+    padding: 18,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -252,16 +368,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   weeklyTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: COLORS.text,
     fontFamily: FONT.heading,
   },
   weeklyPercent: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: COLORS.accent,
     fontFamily: FONT.heading,
@@ -271,22 +387,22 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceElevated,
     borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: COLORS.accent,
+    backgroundColor: COLORS.success,
     borderRadius: 4,
   },
   weeklySubtext: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
     fontFamily: FONT.body,
   },
   todayCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
-    padding: 20,
+    padding: 18,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -296,32 +412,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   todayLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   todayDay: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.accent,
   },
   todayTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   todayExercises: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textSecondary,
     fontFamily: FONT.body,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   primaryButton: {
     backgroundColor: COLORS.accent,
@@ -349,22 +465,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   tipIcon: {
-    fontSize: 24,
+    fontSize: 22,
   },
   tipContent: {
     flex: 1,
   },
   tipTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.text,
     fontFamily: FONT.heading,
     marginBottom: 4,
   },
   tipText: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
     fontFamily: FONT.body,
-    lineHeight: 19,
+    lineHeight: 18,
   },
 });

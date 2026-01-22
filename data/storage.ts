@@ -3,4 +3,6 @@ export const STORAGE_KEYS = {
   plan: 'fitform_plan',
   completed: 'fitform_completed',
   streaks: 'fitform_streaks',
+  stats: 'fitform_stats',
+  readTopics: 'fitform_readTopics',
 };

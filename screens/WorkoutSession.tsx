@@ -73,7 +73,39 @@ export default function WorkoutSession() {
       exerciseCount: totalExercises,
     });
     await AsyncStorage.setItem(STORAGE_KEYS.completed, JSON.stringify(completed));
-    (navigation as any).navigate('WorkoutComplete', { workout, exerciseCount: totalExercises });
+    
+    const currentStreak = calculateStreak(completed);
+    (navigation as any).navigate('WorkoutComplete', { workout, exerciseCount: totalExercises, currentStreak });
+  };
+  
+  const calculateStreak = (completedWorkouts: any[]): number => {
+    if (!completedWorkouts || completedWorkouts.length === 0) return 1;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const sortedDates = completedWorkouts
+      .map(w => {
+        const d = new Date(w.completedAt);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+      })
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .sort((a, b) => b - a);
+
+    let streak = 0;
+    let checkDate = today.getTime();
+
+    for (const date of sortedDates) {
+      if (date === checkDate || date === checkDate - 86400000) {
+        streak++;
+        checkDate = date;
+      } else if (date < checkDate - 86400000) {
+        break;
+      }
+    }
+
+    return Math.max(streak, 1);
   };
 
   const toggleTimer = () => {

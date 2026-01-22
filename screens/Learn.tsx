@@ -1,17 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LEARN_TOPICS, LEARN_CATEGORIES } from '../data/learnContent';
 import { LearnTopic } from '../types';
+import { recordTopicRead } from '../data/gamification';
+import { STORAGE_KEYS } from '../data/storage';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 
 export default function Learn() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTopic, setSelectedTopic] = useState<LearnTopic | null>(null);
+  const [readTopics, setReadTopics] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadReadTopics = async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEYS.readTopics);
+      if (stored) {
+        setReadTopics(JSON.parse(stored));
+      }
+    };
+    loadReadTopics();
+  }, []);
+
+  const handleOpenTopic = async (topic: LearnTopic) => {
+    setSelectedTopic(topic);
+    if (!readTopics.includes(topic.id)) {
+      await recordTopicRead(topic.id);
+      setReadTopics(prev => [...prev, topic.id]);
+    }
+  };
 
   const filteredTopics = selectedCategory === 'all'
     ? LEARN_TOPICS
     : LEARN_TOPICS.filter(topic => topic.category === selectedCategory);
+
+  const isTopicRead = (topicId: string) => readTopics.includes(topicId);
 
   return (
     <ScreenBackground>
@@ -19,6 +43,9 @@ export default function Learn() {
         <View style={styles.header}>
           <Text style={styles.title}>Learn</Text>
           <Text style={styles.subtitle}>Understand your body</Text>
+          <View style={styles.progressBadge}>
+            <Text style={styles.progressText}>{readTopics.length}/{LEARN_TOPICS.length} completed</Text>
+          </View>
         </View>
 
         <ScrollView 
@@ -35,6 +62,8 @@ export default function Learn() {
                 selectedCategory === category.id && styles.filterChipActive
               ]}
               onPress={() => setSelectedCategory(category.id)}
+              accessibilityLabel={`Filter by ${category.label}`}
+              accessibilityRole="button"
             >
               <Text style={styles.filterIcon}>{category.icon}</Text>
               <Text style={[
@@ -51,14 +80,25 @@ export default function Learn() {
           {filteredTopics.map(topic => (
             <Pressable
               key={topic.id}
-              style={styles.topicCard}
-              onPress={() => setSelectedTopic(topic)}
+              style={[styles.topicCard, isTopicRead(topic.id) && styles.topicCardRead]}
+              onPress={() => handleOpenTopic(topic)}
+              accessibilityLabel={`${topic.title}. ${isTopicRead(topic.id) ? 'Already read' : 'Tap to read'}`}
+              accessibilityRole="button"
             >
-              <Text style={styles.topicIcon}>{topic.icon}</Text>
+              <View style={styles.topicHeader}>
+                <Text style={styles.topicIcon}>{topic.icon}</Text>
+                {isTopicRead(topic.id) && (
+                  <View style={styles.readBadge}>
+                    <Text style={styles.readBadgeText}>✓</Text>
+                  </View>
+                )}
+              </View>
               <Text style={styles.topicTitle}>{topic.title}</Text>
               <Text style={styles.topicSummary} numberOfLines={2}>{topic.summary}</Text>
               <View style={styles.readMore}>
-                <Text style={styles.readMoreText}>Read more</Text>
+                <Text style={styles.readMoreText}>
+                  {isTopicRead(topic.id) ? 'Read again' : 'Read more →'}
+                </Text>
               </View>
             </Pressable>
           ))}
@@ -76,6 +116,11 @@ export default function Learn() {
             <Pressable onPress={() => setSelectedTopic(null)} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>← Back</Text>
             </Pressable>
+            {selectedTopic && isTopicRead(selectedTopic.id) && (
+              <View style={styles.xpEarnedBadge}>
+                <Text style={styles.xpEarnedText}>+10 XP earned</Text>
+              </View>
+            )}
           </View>
           <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
             {selectedTopic && (
@@ -119,6 +164,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: FONT.body,
     marginTop: 4,
+  },
+  progressBadge: {
+    backgroundColor: COLORS.successLight,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    alignSelf: 'flex-start',
+    marginTop: 12,
+  },
+  progressText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.success,
+    fontFamily: FONT.body,
   },
   filterScroll: {
     marginHorizontal: -24,
@@ -167,9 +226,31 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     ...SHADOWS.sm,
   },
+  topicCardRead: {
+    borderColor: COLORS.success,
+    borderWidth: 2,
+  },
+  topicHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
   topicIcon: {
     fontSize: 32,
-    marginBottom: 12,
+  },
+  readBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.success,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  readBadgeText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '700',
   },
   topicTitle: {
     fontSize: 18,
@@ -204,6 +285,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
     backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   closeButton: {
     paddingVertical: 8,
@@ -212,6 +296,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.accent,
+    fontFamily: FONT.body,
+  },
+  xpEarnedBadge: {
+    backgroundColor: COLORS.successLight,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.full,
+  },
+  xpEarnedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.success,
     fontFamily: FONT.body,
   },
   modalContent: {
