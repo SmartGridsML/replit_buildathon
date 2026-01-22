@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
-
-const { width } = Dimensions.get('window');
+import ScreenBackground from '../components/ScreenBackground';
 
 interface PoseMessage {
   exercise: string;
@@ -12,10 +12,11 @@ interface PoseMessage {
 }
 
 export default function FormCoach() {
+  const navigation = useNavigation();
   const [repCount, setRepCount] = useState(0);
   const [cues, setCues] = useState<string[]>([]);
-  const [exercise, setExercise] = useState('plank');
-  const [isPaused, setIsPaused] = useState(false);
+  const [exercise, setExercise] = useState('squat');
+  const [isActive, setIsActive] = useState(false);
 
   const handleMessage = (event: { nativeEvent: { data: string } }) => {
     try {
@@ -29,75 +30,88 @@ export default function FormCoach() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>FitForm</Text>
-        <Text style={styles.headerSubtitle}>Morning Workout</Text>
-      </View>
-
-      <View style={styles.exerciseDisplay}>
-        <Text style={styles.exerciseName}>{exercise}</Text>
-      </View>
-
-      <View style={styles.timerContainer}>
-        <View style={styles.timerRing}>
-          <Text style={styles.timerValue}>{repCount}</Text>
-          <Text style={styles.timerUnit}>"</Text>
+    <ScreenBackground>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <Text style={styles.backArrow}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>Form Coach</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </View>
 
-      <WebView
-        source={require('../assets/pose.html')}
-        style={styles.webview}
-        javaScriptEnabled
-        originWhitelist={['*']}
-        mediaPlaybackRequiresUserAction={false}
-        allowsInlineMediaPlayback
-        onMessage={handleMessage}
-      />
+        <View style={styles.exerciseCard}>
+          <Text style={styles.exerciseLabel}>Current Exercise</Text>
+          <Text style={styles.exerciseName}>{exercise}</Text>
+        </View>
 
-      <View style={styles.cueSection}>
-        {cues.length > 0 && (
-          <View style={styles.cueContainer}>
-            {cues.map((cue, idx) => (
-              <Text key={idx} style={styles.cueText}>• {cue}</Text>
-            ))}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{repCount}</Text>
+            <Text style={styles.statLabel}>Reps</Text>
           </View>
-        )}
-      </View>
+          <View style={styles.statCard}>
+            <View style={[styles.statusDot, isActive && styles.statusDotActive]} />
+            <Text style={styles.statLabel}>{isActive ? 'Active' : 'Ready'}</Text>
+          </View>
+        </View>
 
-      <View style={styles.controlsRow}>
-        <Pressable 
-          style={[styles.controlButton, styles.pauseButton]}
-          onPress={() => setIsPaused(!isPaused)}
-        >
-          <Text style={styles.controlButtonText}>{isPaused ? 'Resume' : 'Pause'}</Text>
-        </Pressable>
-        <Pressable style={[styles.controlButton, styles.nextButton]}>
-          <Text style={styles.controlButtonTextDark}>next</Text>
-        </Pressable>
-      </View>
+        <View style={styles.cameraSection}>
+          <View style={styles.cameraPlaceholder}>
+            <WebView
+              source={require('../assets/pose.html')}
+              style={styles.webview}
+              javaScriptEnabled
+              originWhitelist={['*']}
+              mediaPlaybackRequiresUserAction={false}
+              allowsInlineMediaPlayback
+              onMessage={handleMessage}
+              onLoadEnd={() => setIsActive(true)}
+            />
+          </View>
+          <Text style={styles.cameraHint}>Position yourself in frame</Text>
+        </View>
 
-      <View style={styles.nextExercise}>
-        <Text style={styles.nextLabel}>next :</Text>
-        <Text style={styles.nextName}>abdominal crunches</Text>
-      </View>
-    </View>
+        <View style={styles.feedbackCard}>
+          <Text style={styles.feedbackTitle}>Form Feedback</Text>
+          {cues.length === 0 ? (
+            <Text style={styles.feedbackEmpty}>Detecting movement...</Text>
+          ) : (
+            cues.map((cue, idx) => (
+              <View key={idx} style={styles.feedbackItem}>
+                <Text style={styles.feedbackBullet}>•</Text>
+                <Text style={styles.feedbackText}>{cue}</Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={styles.tipsCard}>
+          <Text style={styles.tipsTitle}>Quick Tips</Text>
+          <Text style={styles.tipItem}>• Stand 6-8 feet from camera</Text>
+          <Text style={styles.tipItem}>• Ensure good lighting</Text>
+          <Text style={styles.tipItem}>• Wear fitted clothing</Text>
+        </View>
+      </ScrollView>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
+    padding: 24,
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 16,
+    marginBottom: 24,
+  },
+  backArrow: {
+    fontSize: 24,
+    color: COLORS.text,
   },
   headerTitle: {
     fontSize: 18,
@@ -105,115 +119,153 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontFamily: FONT.heading,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontFamily: FONT.body,
+  headerSpacer: {
+    width: 24,
   },
-  exerciseDisplay: {
+  exerciseCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 20,
     alignItems: 'center',
-    paddingVertical: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.md,
+  },
+  exerciseLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
   },
   exerciseName: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.text,
+    fontFamily: FONT.heading,
+    textTransform: 'capitalize',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.md,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  statValue: {
     fontSize: 36,
     fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
-    textTransform: 'lowercase',
   },
-  timerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 32,
-  },
-  timerRing: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 8,
-    borderColor: COLORS.accent,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  timerValue: {
-    fontSize: 72,
-    fontWeight: '300',
-    color: COLORS.text,
-    fontFamily: FONT.heading,
-  },
-  timerUnit: {
-    fontSize: 36,
-    fontWeight: '300',
-    color: COLORS.text,
-    marginTop: -20,
-  },
-  webview: {
-    width: 1,
-    height: 1,
-    opacity: 0,
-  },
-  cueSection: {
-    paddingHorizontal: 24,
-    minHeight: 60,
-  },
-  cueContainer: {
-    backgroundColor: COLORS.surfaceElevated,
-    borderRadius: RADIUS.md,
-    padding: 16,
-  },
-  cueText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontFamily: FONT.body,
-    lineHeight: 22,
-  },
-  controlsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 24,
-    paddingVertical: 24,
-    gap: 12,
-  },
-  controlButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: RADIUS.full,
-    alignItems: 'center',
-  },
-  pauseButton: {
-    backgroundColor: COLORS.accent,
-  },
-  nextButton: {
-    backgroundColor: COLORS.surfaceElevated,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  controlButtonText: {
-    color: COLORS.white,
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: FONT.body,
-  },
-  controlButtonTextDark: {
-    color: COLORS.text,
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: FONT.body,
-  },
-  nextExercise: {
-    alignItems: 'center',
-    paddingBottom: 40,
-  },
-  nextLabel: {
+  statLabel: {
     fontSize: 12,
     color: COLORS.textMuted,
     fontFamily: FONT.body,
-    marginBottom: 4,
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  nextName: {
-    fontSize: 16,
+  statusDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.textMuted,
+    marginBottom: 8,
+  },
+  statusDotActive: {
+    backgroundColor: COLORS.success,
+  },
+  cameraSection: {
+    marginBottom: 20,
+  },
+  cameraPlaceholder: {
+    height: 200,
+    backgroundColor: COLORS.surfaceElevated,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  webview: {
+    flex: 1,
+    backgroundColor: COLORS.surfaceElevated,
+  },
+  cameraHint: {
+    textAlign: 'center',
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
+  },
+  feedbackCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  feedbackTitle: {
+    fontSize: 14,
     fontWeight: '600',
+    color: COLORS.textSecondary,
+    fontFamily: FONT.body,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  feedbackEmpty: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
+    fontStyle: 'italic',
+  },
+  feedbackItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  feedbackBullet: {
+    fontSize: 14,
+    color: COLORS.accent,
+    marginRight: 8,
+    fontWeight: '700',
+  },
+  feedbackText: {
+    fontSize: 14,
     color: COLORS.text,
-    fontFamily: FONT.heading,
+    fontFamily: FONT.body,
+    flex: 1,
+    lineHeight: 20,
+  },
+  tipsCard: {
+    backgroundColor: COLORS.surfaceElevated,
+    borderRadius: RADIUS.lg,
+    padding: 20,
+  },
+  tipsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    fontFamily: FONT.body,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  tipItem: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontFamily: FONT.body,
+    lineHeight: 22,
   },
 });

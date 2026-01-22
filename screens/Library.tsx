@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, Modal, Pressable, Image, Dimensions } from 'react-native';
 import ExerciseCard from '../components/ExerciseCard';
 import { EXERCISES } from '../data/exercises';
@@ -8,8 +8,22 @@ import ScreenBackground from '../components/ScreenBackground';
 
 const { height } = Dimensions.get('window');
 
+const CATEGORIES = [
+  { label: 'All', value: 'all' },
+  { label: 'Upper', value: 'upper' },
+  { label: 'Lower', value: 'legs' },
+  { label: 'Core', value: 'core' },
+  { label: 'Mobility', value: 'mobility' },
+];
+
 export default function Library() {
   const [selected, setSelected] = useState<Exercise | null>(null);
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const filteredExercises = useMemo(() => {
+    if (activeFilter === 'all') return EXERCISES;
+    return EXERCISES.filter(e => e.tags.includes(activeFilter));
+  }, [activeFilter]);
 
   return (
     <ScreenBackground>
@@ -19,14 +33,33 @@ export default function Library() {
           <Text style={styles.subtitle}>Learn proper form for each exercise</Text>
         </View>
 
+        <View style={styles.filterRow}>
+          {CATEGORIES.map(cat => (
+            <Pressable
+              key={cat.value}
+              style={[styles.filterChip, activeFilter === cat.value && styles.filterChipActive]}
+              onPress={() => setActiveFilter(cat.value)}
+            >
+              <Text style={[styles.filterText, activeFilter === cat.value && styles.filterTextActive]}>
+                {cat.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         <FlatList
-          data={EXERCISES}
+          data={filteredExercises}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <ExerciseCard exercise={item} onPress={() => setSelected(item)} />
           )}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No exercises in this category</Text>
+            </View>
+          }
         />
 
         {selected && (
@@ -71,7 +104,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
@@ -86,8 +119,43 @@ const styles = StyleSheet.create({
     fontFamily: FONT.body,
     marginTop: 4,
   },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  filterChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  filterChipActive: {
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    fontFamily: FONT.body,
+  },
+  filterTextActive: {
+    color: COLORS.white,
+  },
   list: {
     paddingBottom: 100,
+  },
+  emptyState: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: COLORS.textMuted,
+    fontSize: 14,
+    fontFamily: FONT.body,
   },
   modalBackdrop: {
     flex: 1,

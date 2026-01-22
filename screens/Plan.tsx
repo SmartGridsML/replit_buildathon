@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { WeeklyPlan, UserProfile, Workout } from '../types';
 import { STORAGE_KEYS } from '../data/storage';
 import { generateWeeklyPlan } from '../data/planGenerator';
@@ -17,6 +17,7 @@ function getExerciseNames(workout: Workout) {
 }
 
 export default function Plan() {
+  const navigation = useNavigation();
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -34,6 +35,10 @@ export default function Plan() {
     const newPlan = generateWeeklyPlan(profile);
     await AsyncStorage.setItem(STORAGE_KEYS.plan, JSON.stringify(newPlan));
     setPlan(newPlan);
+  };
+
+  const startWorkout = (workout: Workout) => {
+    (navigation as any).navigate('WorkoutSession', { workout });
   };
 
   return (
@@ -62,6 +67,7 @@ export default function Plan() {
                 key={workout.id}
                 workout={workout}
                 exerciseLabels={getExerciseNames(workout)}
+                onStart={() => startWorkout(workout)}
               />
             ))}
           </View>

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { WeeklyPlan, Workout } from '../types';
@@ -21,8 +21,9 @@ const DAY_MAP: Record<number, string> = {
 function getWorkoutLabel(workout: Workout) {
   const names = workout.exerciseIds
     .map((id) => EXERCISES.find((exercise) => exercise.id === id)?.name || id)
+    .slice(0, 3)
     .join(' • ');
-  return names;
+  return names + (workout.exerciseIds.length > 3 ? '...' : '');
 }
 
 function pickTodaysWorkout(plan: WeeklyPlan | null): Workout | null {
@@ -34,19 +35,59 @@ function pickTodaysWorkout(plan: WeeklyPlan | null): Workout | null {
   return plan.workouts.find((workout) => workout.dayLabel === todayLabel) || plan.workouts[0];
 }
 
+function calculateStreak(completedWorkouts: any[]): number {
+  if (!completedWorkouts || completedWorkouts.length === 0) return 0;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const sortedDates = completedWorkouts
+    .map(w => {
+      const d = new Date(w.completedAt);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime();
+    })
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .sort((a, b) => b - a);
+
+  let streak = 0;
+  let checkDate = today.getTime();
+
+  for (const date of sortedDates) {
+    if (date === checkDate || date === checkDate - 86400000) {
+      streak++;
+      checkDate = date;
+    } else if (date < checkDate - 86400000) {
+      break;
+    }
+  }
+
+  return streak;
+}
+
 export default function Home() {
   const navigation = useNavigation();
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      const loadPlan = async () => {
+      const loadData = async () => {
         const storedPlan = await AsyncStorage.getItem(STORAGE_KEYS.plan);
+        const storedCompleted = await AsyncStorage.getItem(STORAGE_KEYS.completed);
+        
         if (storedPlan) {
           setPlan(JSON.parse(storedPlan));
         }
+        
+        if (storedCompleted) {
+          const completed = JSON.parse(storedCompleted);
+          setCompletedCount(completed.length);
+          setStreak(calculateStreak(completed));
+        }
       };
-      loadPlan();
+      loadData();
     }, [])
   );
 
@@ -60,11 +101,18 @@ export default function Home() {
           <Text style={styles.subtitle}>Stay healthy and strong</Text>
         </View>
 
-        <View style={styles.heroSection}>
-          <View style={styles.illustrationContainer}>
-            <View style={styles.fitnessIllustration}>
-              <Text style={styles.illustrationEmoji}>💪</Text>
-            </View>
+        <View style={styles.progressRow}>
+          <View style={styles.progressCard}>
+            <Text style={styles.progressValue}>{completedCount}</Text>
+            <Text style={styles.progressLabel}>Workouts</Text>
+          </View>
+          <View style={styles.progressCard}>
+            <Text style={styles.progressValue}>{streak}</Text>
+            <Text style={styles.progressLabel}>Day Streak</Text>
+          </View>
+          <View style={styles.progressCard}>
+            <Text style={styles.progressValue}>💪</Text>
+            <Text style={styles.progressLabel}>Keep Going</Text>
           </View>
         </View>
 
@@ -80,8 +128,13 @@ export default function Home() {
         </View>
 
         <Pressable
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('FormCoach' as never)}
+          style={[styles.primaryButton, !todayWorkout && styles.buttonDisabled]}
+          onPress={() => {
+            if (todayWorkout) {
+              (navigation as any).navigate('WorkoutSession', { workout: todayWorkout });
+            }
+          }}
+          disabled={!todayWorkout}
         >
           <Text style={styles.primaryButtonText}>Start Workout</Text>
         </Pressable>
@@ -118,7 +171,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   title: {
     fontSize: 32,
@@ -133,26 +186,34 @@ const styles = StyleSheet.create({
     fontFamily: FONT.body,
     marginTop: 4,
   },
-  heroSection: {
-    alignItems: 'center',
-    marginBottom: 32,
+  progressRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 24,
   },
-  illustrationContainer: {
-    width: 200,
-    height: 200,
-    justifyContent: 'center',
+  progressCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.md,
+    padding: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
-  fitnessIllustration: {
-    width: 180,
-    height: 180,
-    backgroundColor: COLORS.surfaceElevated,
-    borderRadius: 90,
-    justifyContent: 'center',
-    alignItems: 'center',
+  progressValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    fontFamily: FONT.heading,
   },
-  illustrationEmoji: {
-    fontSize: 80,
+  progressLabel: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   todayCard: {
     backgroundColor: COLORS.white,
@@ -207,6 +268,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: FONT.body,
+  },
+  buttonDisabled: {
+    opacity: 0.4,
   },
   quickActions: {
     flexDirection: 'row',

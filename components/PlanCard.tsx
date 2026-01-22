@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Workout } from '../types';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 
 interface PlanCardProps {
   workout: Workout;
   exerciseLabels?: string;
+  onStart?: () => void;
 }
 
-export default function PlanCard({ workout, exerciseLabels }: PlanCardProps) {
+export default function PlanCard({ workout, exerciseLabels, onStart }: PlanCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -26,6 +27,11 @@ export default function PlanCard({ workout, exerciseLabels }: PlanCardProps) {
       <Text style={styles.exercises} numberOfLines={2}>
         {exerciseLabels || workout.exerciseIds.join(' • ')}
       </Text>
+      {onStart && (
+        <Pressable style={styles.startButton} onPress={onStart}>
+          <Text style={styles.startButtonText}>Start</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -92,5 +98,19 @@ const styles = StyleSheet.create({
     fontFamily: FONT.body,
     lineHeight: 18,
     marginLeft: 36,
+    marginBottom: 12,
+  },
+  startButton: {
+    backgroundColor: COLORS.accent,
+    paddingVertical: 12,
+    borderRadius: RADIUS.full,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  startButtonText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: FONT.body,
   },
 });

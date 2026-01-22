@@ -9,6 +9,8 @@ import Home from '../screens/Home';
 import Plan from '../screens/Plan';
 import Library from '../screens/Library';
 import FormCoach from '../screens/FormCoach';
+import WorkoutSession from '../screens/WorkoutSession';
+import WorkoutComplete from '../screens/WorkoutComplete';
 import { STORAGE_KEYS } from '../data/storage';
 import { COLORS, FONT } from '../theme';
 
@@ -106,6 +108,8 @@ export default function Navigation() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!hasProfile && <Stack.Screen name="Onboarding" component={Onboarding} />}
         <Stack.Screen name="Tabs" component={Tabs} />
+        <Stack.Screen name="WorkoutSession" component={WorkoutSession} />
+        <Stack.Screen name="WorkoutComplete" component={WorkoutComplete} />
       </Stack.Navigator>
     </NavigationContainer>
   );
