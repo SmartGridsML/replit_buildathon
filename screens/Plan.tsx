@@ -7,13 +7,13 @@ import { STORAGE_KEYS } from '../data/storage';
 import { generateWeeklyPlan } from '../data/planGenerator';
 import PlanCard from '../components/PlanCard';
 import { EXERCISES } from '../data/exercises';
-import { COLORS, FONT, RADIUS } from '../theme';
+import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 
 function getExerciseNames(workout: Workout) {
   return workout.exerciseIds
     .map((id) => EXERCISES.find((exercise) => exercise.id === id)?.name || id)
-    .join(' | ');
+    .join(' • ');
 }
 
 export default function Plan() {
@@ -40,19 +40,18 @@ export default function Plan() {
     <ScreenBackground>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>TRAINING CYCLE</Text>
-          <Text style={styles.subtitle}>Optimized for your goal and equipment.</Text>
+          <Text style={styles.title}>Weekly Plan</Text>
+          <Text style={styles.subtitle}>Your personalized workout schedule</Text>
         </View>
 
-        <View style={styles.summaryBox}>
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>EXPERIENCE</Text>
-            <Text style={styles.summaryValue}>{profile?.experience?.toUpperCase() || '---'}</Text>
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Experience</Text>
+            <Text style={styles.statValue}>{profile?.experience || '—'}</Text>
           </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>GOAL</Text>
-            <Text style={styles.summaryValue}>{profile?.goal?.toUpperCase() || '---'}</Text>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Goal</Text>
+            <Text style={styles.statValue}>{profile?.goal || '—'}</Text>
           </View>
         </View>
 
@@ -68,12 +67,14 @@ export default function Plan() {
           </View>
         ) : (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Protocol not initialized.</Text>
+            <Text style={styles.emptyIcon}>📋</Text>
+            <Text style={styles.emptyText}>No workout plan yet</Text>
+            <Text style={styles.emptySubtext}>Complete onboarding to generate your plan</Text>
           </View>
         )}
 
-        <Pressable style={styles.regen} onPress={regeneratePlan}>
-          <Text style={styles.regenText}>RECALIBRATE PLAN</Text>
+        <Pressable style={styles.regenButton} onPress={regeneratePlan}>
+          <Text style={styles.regenText}>Regenerate Plan</Text>
         </Pressable>
       </ScrollView>
     </ScreenBackground>
@@ -83,7 +84,7 @@ export default function Plan() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    paddingTop: 50,
+    paddingTop: 60,
     paddingBottom: 40,
   },
   header: {
@@ -91,47 +92,46 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '900',
+    fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
-    letterSpacing: 1.5,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    color: COLORS.textMuted,
-    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontSize: 15,
     fontFamily: FONT.body,
     marginTop: 4,
   },
-  summaryBox: {
+  statsRow: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(26, 30, 35, 0.6)',
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
     borderRadius: RADIUS.md,
     padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  summaryItem: {
-    flex: 1,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
-  summaryDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    marginHorizontal: 16,
-  },
-  summaryLabel: {
-    fontSize: 10,
-    color: COLORS.textDim,
-    fontWeight: '800',
-    letterSpacing: 1,
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontWeight: '500',
     marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  summaryValue: {
-    fontSize: 13,
-    color: COLORS.accent,
+  statValue: {
+    fontSize: 16,
+    color: COLORS.text,
     fontWeight: '700',
     fontFamily: FONT.heading,
+    textTransform: 'capitalize',
   },
   list: {
     marginBottom: 24,
@@ -140,24 +140,34 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     alignItems: 'center',
   },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
   emptyText: {
-    color: COLORS.textDim,
+    color: COLORS.text,
+    fontFamily: FONT.heading,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    color: COLORS.textMuted,
     fontFamily: FONT.body,
     fontSize: 14,
   },
-  regen: {
-    backgroundColor: 'transparent',
+  regenButton: {
+    backgroundColor: COLORS.white,
     paddingVertical: 16,
-    borderRadius: RADIUS.md,
+    borderRadius: RADIUS.full,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(44, 230, 193, 0.3)',
+    borderColor: COLORS.accent,
   },
   regenText: {
     color: COLORS.accent,
-    fontSize: 14,
-    fontWeight: '900',
-    fontFamily: FONT.heading,
-    letterSpacing: 1.5,
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: FONT.body,
   },
 });

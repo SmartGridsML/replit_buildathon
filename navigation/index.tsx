@@ -21,28 +21,27 @@ function Tabs() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: 'rgba(18, 21, 24, 0.95)',
+          backgroundColor: COLORS.white,
           borderTopWidth: 1,
-          borderTopColor: 'rgba(255, 255, 255, 0.05)',
+          borderTopColor: COLORS.borderLight,
           paddingTop: 8,
-          height: 64,
+          paddingBottom: 8,
+          height: 60,
           elevation: 0,
         },
         tabBarActiveTintColor: COLORS.accent,
-        tabBarInactiveTintColor: COLORS.textDim,
+        tabBarInactiveTintColor: COLORS.textMuted,
         tabBarLabelStyle: {
-          fontFamily: FONT.heading,
-          fontSize: 10,
-          fontWeight: '800',
-          letterSpacing: 1,
-          marginBottom: 8,
+          fontFamily: FONT.body,
+          fontSize: 11,
+          fontWeight: '600',
         },
       }}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Plan" component={Plan} options={{ title: 'PROTOCOL' }} />
-      <Tab.Screen name="Library" component={Library} options={{ title: 'ARCHIVE' }} />
-      <Tab.Screen name="FormCoach" component={FormCoach} options={{ title: 'COACH' }} />
+      <Tab.Screen name="Plan" component={Plan} />
+      <Tab.Screen name="Library" component={Library} />
+      <Tab.Screen name="Coach" component={FormCoach} />
     </Tab.Navigator>
   );
 }
@@ -50,7 +49,7 @@ function Tabs() {
 function LoadingScreen() {
   return (
     <View style={styles.loading}>
-      <Text style={styles.loadingText}>Loading FitForm...</Text>
+      <Text style={styles.loadingText}>FitForm</Text>
     </View>
   );
 }
@@ -92,7 +91,8 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: COLORS.text,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '700',
     fontFamily: FONT.heading,
   },
 });

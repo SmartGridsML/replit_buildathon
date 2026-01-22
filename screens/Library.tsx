@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, Modal, Pressable, Image, Dimensions }
 import ExerciseCard from '../components/ExerciseCard';
 import { EXERCISES } from '../data/exercises';
 import { Exercise } from '../types';
-import { COLORS, FONT, RADIUS } from '../theme';
+import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 
 const { height } = Dimensions.get('window');
@@ -15,8 +15,8 @@ export default function Library() {
     <ScreenBackground>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>MOVEMENT ARCHIVE</Text>
-          <Text style={styles.subtitle}>Verified protocols for optimal performance.</Text>
+          <Text style={styles.title}>Exercise Library</Text>
+          <Text style={styles.subtitle}>Learn proper form for each exercise</Text>
         </View>
 
         <FlatList
@@ -35,13 +35,13 @@ export default function Library() {
               <View style={styles.modalCard}>
                 <View style={styles.modalImageContainer}>
                   <Image source={{ uri: selected.image }} style={styles.modalImage} />
-                  <Pressable style={styles.closeCircle} onPress={() => setSelected(null)}>
+                  <Pressable style={styles.closeButton} onPress={() => setSelected(null)}>
                     <Text style={styles.closeText}>×</Text>
                   </Pressable>
                 </View>
                 
                 <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>{selected.name.toUpperCase()}</Text>
+                  <Text style={styles.modalTitle}>{selected.name}</Text>
                   <View style={styles.modalTagRow}>
                     {selected.tags.map(tag => (
                       <View key={tag} style={styles.modalTag}>
@@ -51,8 +51,8 @@ export default function Library() {
                   </View>
                   <Text style={styles.modalDescription}>{selected.description}</Text>
                   
-                  <Pressable style={styles.actionButton} onPress={() => setSelected(null)}>
-                    <Text style={styles.actionButtonText}>DISMISS</Text>
+                  <Pressable style={styles.dismissButton} onPress={() => setSelected(null)}>
+                    <Text style={styles.dismissButtonText}>Close</Text>
                   </Pressable>
                 </View>
               </View>
@@ -67,7 +67,7 @@ export default function Library() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: 60,
     paddingHorizontal: 24,
   },
   header: {
@@ -75,14 +75,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '900',
+    fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
-    letterSpacing: 1.5,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    color: COLORS.textMuted,
-    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontSize: 15,
     fontFamily: FONT.body,
     marginTop: 4,
   },
@@ -91,42 +91,42 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: COLORS.overlay,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   modalCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
     borderRadius: RADIUS.xl,
     width: '100%',
     maxWidth: 400,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    ...SHADOWS.lg,
   },
   modalImageContainer: {
     position: 'relative',
     width: '100%',
-    height: 240,
+    height: 220,
   },
   modalImage: {
     width: '100%',
     height: '100%',
   },
-  closeCircle: {
+  closeButton: {
     position: 'absolute',
     top: 16,
     right: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
+    ...SHADOWS.md,
   },
   closeText: {
-    color: '#FFF',
+    color: COLORS.text,
     fontSize: 24,
     fontWeight: '300',
     marginTop: -2,
@@ -136,51 +136,46 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: '900',
+    fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
-    letterSpacing: 1,
   },
   modalTagRow: {
     flexDirection: 'row',
-    marginTop: 8,
+    marginTop: 12,
     marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 8,
   },
   modalTag: {
-    backgroundColor: 'rgba(44, 230, 193, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(44, 230, 193, 0.2)',
+    backgroundColor: COLORS.surfaceElevated,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
   },
   modalTagText: {
-    color: COLORS.accent,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
   modalDescription: {
     fontSize: 15,
-    color: COLORS.textMuted,
+    color: COLORS.textSecondary,
     fontFamily: FONT.body,
-    lineHeight: 22,
+    lineHeight: 24,
     marginBottom: 24,
   },
-  actionButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  dismissButton: {
+    backgroundColor: COLORS.accent,
     paddingVertical: 16,
-    borderRadius: RADIUS.md,
+    borderRadius: RADIUS.full,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  actionButtonText: {
-    color: COLORS.text,
-    fontSize: 14,
-    fontWeight: '900',
-    fontFamily: FONT.heading,
-    letterSpacing: 2,
+  dismissButtonText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: FONT.body,
   },
 });

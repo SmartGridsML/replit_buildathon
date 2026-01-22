@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Workout } from '../types';
-import { COLORS, FONT, RADIUS } from '../theme';
+import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 
 interface PlanCardProps {
   workout: Workout;
@@ -12,80 +12,85 @@ export default function PlanCard({ workout, exerciseLabels }: PlanCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
+        <View style={styles.checkCircle}>
+          <Text style={styles.checkMark}>○</Text>
+        </View>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>{workout.title}</Text>
+          <Text style={styles.focus}>{workout.focus}</Text>
+        </View>
         <View style={styles.dayBadge}>
           <Text style={styles.day}>{workout.dayLabel}</Text>
         </View>
-        <Text style={styles.title}>{workout.title}</Text>
       </View>
-      <View style={styles.content}>
-        <Text style={styles.focus}>{workout.focus}</Text>
-        <Text style={styles.exercises} numberOfLines={2}>
-          {exerciseLabels || workout.exerciseIds.join(' | ')}
-        </Text>
-      </View>
+      <Text style={styles.exercises} numberOfLines={2}>
+        {exerciseLabels || workout.exerciseIds.join(' • ')}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(26, 30, 35, 0.8)',
-    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.md,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    ...SHADOWS.sm,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  checkCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  checkMark: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+  },
+  headerContent: {
+    flex: 1,
   },
   dayBadge: {
-    backgroundColor: COLORS.chip,
-    paddingHorizontal: 8,
+    backgroundColor: COLORS.surfaceElevated,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: RADIUS.sm,
-    marginRight: 12,
-    borderWidth: 0.5,
-    borderColor: 'rgba(44, 230, 193, 0.2)',
+    borderRadius: RADIUS.full,
   },
   day: {
-    fontSize: 10,
-    textTransform: 'uppercase',
-    color: COLORS.accent,
-    letterSpacing: 1.5,
-    fontWeight: '700',
-    fontFamily: FONT.heading,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    fontFamily: FONT.heading,
-    letterSpacing: 0.5,
-  },
-  content: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.03)',
-    paddingTop: 10,
-  },
-  focus: {
-    color: COLORS.accentStrong,
-    fontSize: 13,
+    fontSize: 11,
+    color: COLORS.textSecondary,
     fontWeight: '600',
     fontFamily: FONT.body,
-    marginBottom: 4,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontFamily: FONT.heading,
+  },
+  focus: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontFamily: FONT.body,
+    marginTop: 2,
   },
   exercises: {
     color: COLORS.textMuted,
     fontSize: 13,
     fontFamily: FONT.body,
     lineHeight: 18,
+    marginLeft: 36,
   },
 });

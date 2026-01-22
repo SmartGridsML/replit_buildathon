@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable, Platform } from 'react-native';
 import { Exercise } from '../types';
-import { COLORS, FONT, RADIUS } from '../theme';
+import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -11,22 +11,17 @@ interface ExerciseCardProps {
 export default function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: exercise.image }} style={styles.image} />
-        <View style={styles.imageOverlay} />
+      <View style={styles.checkCircle}>
+        <Text style={styles.bullet}>○</Text>
       </View>
       <View style={styles.content}>
         <Text style={styles.name}>{exercise.name}</Text>
-        <Text style={styles.description} numberOfLines={2}>
+        <Text style={styles.description} numberOfLines={1}>
           {exercise.description}
         </Text>
-        <View style={styles.tagRow}>
-          {exercise.tags.slice(0, 2).map((tag) => (
-            <View key={tag} style={styles.tagBadge}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </View>
+      </View>
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: exercise.image }} style={styles.image} />
       </View>
     </Pressable>
   );
@@ -35,65 +30,54 @@ export default function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(26, 30, 35, 0.6)',
-    borderRadius: RADIUS.lg,
-    marginBottom: 16,
-    overflow: 'hidden',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.md,
+    padding: 12,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: COLORS.border,
-    ...(Platform.OS === 'web' && { backdropFilter: 'blur(10px)' }),
+    ...SHADOWS.sm,
+  },
+  checkCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  bullet: {
+    color: COLORS.textMuted,
+    fontSize: 10,
+  },
+  content: {
+    flex: 1,
+    marginRight: 12,
+  },
+  name: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontFamily: FONT.heading,
+  },
+  description: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+    fontFamily: FONT.body,
   },
   imageContainer: {
-    position: 'relative',
-    width: 120,
-    height: 120,
+    width: 50,
+    height: 50,
+    borderRadius: RADIUS.sm,
+    overflow: 'hidden',
+    backgroundColor: COLORS.surfaceElevated,
   },
   image: {
     width: '100%',
     height: '100%',
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(11, 13, 15, 0.2)',
-  },
-  content: {
-    flex: 1,
-    padding: 14,
-    justifyContent: 'center',
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    fontFamily: FONT.heading,
-    letterSpacing: 0.5,
-  },
-  description: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-    marginTop: 4,
-    fontFamily: FONT.body,
-    lineHeight: 18,
-  },
-  tagRow: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-  tagBadge: {
-    backgroundColor: COLORS.chip,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: RADIUS.sm,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(44, 230, 193, 0.1)',
-  },
-  tagText: {
-    fontSize: 10,
-    color: COLORS.accent,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontFamily: FONT.heading,
   },
 });

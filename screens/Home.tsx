@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Linking, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { WeeklyPlan, Workout } from '../types';
 import { STORAGE_KEYS } from '../data/storage';
 import { EXERCISES } from '../data/exercises';
-import { COLORS, FONT, RADIUS } from '../theme';
+import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 
 const DAY_MAP: Record<number, string> = {
@@ -21,7 +21,7 @@ const DAY_MAP: Record<number, string> = {
 function getWorkoutLabel(workout: Workout) {
   const names = workout.exerciseIds
     .map((id) => EXERCISES.find((exercise) => exercise.id === id)?.name || id)
-    .join(' | ');
+    .join(' • ');
   return names;
 }
 
@@ -34,23 +34,9 @@ function pickTodaysWorkout(plan: WeeklyPlan | null): Workout | null {
   return plan.workouts.find((workout) => workout.dayLabel === todayLabel) || plan.workouts[0];
 }
 
-const PLAYLISTS = [
-  { label: 'Power', url: 'spotify:playlist:37i9dQZF1DX76Wlfdnj7AP' },
-  { label: 'Focus', url: 'spotify:playlist:37i9dQZF1DX4eRPd9frC1m' },
-];
-
-const CONTENT = [
-  { label: 'Squat Form', url: 'https://www.youtube.com/watch?v=1oed-UmAxFs' },
-  { label: 'Push-Up Tips', url: 'https://www.youtube.com/watch?v=IODxDxX7oi4' },
-];
-
 export default function Home() {
   const navigation = useNavigation();
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
-
-  const openLink = async (url: string) => {
-    Linking.openURL(url);
-  };
 
   useFocusEffect(
     useCallback(() => {
@@ -70,63 +56,51 @@ export default function Home() {
     <ScreenBackground>
       <ScrollView style={styles.root} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>FITFORM</Text>
-          <View style={styles.statusBadge}>
-            <View style={styles.statusDot} />
-            <Text style={styles.statusText}>READY</Text>
-          </View>
+          <Text style={styles.title}>Fitness & Yoga</Text>
+          <Text style={styles.subtitle}>Stay healthy and strong</Text>
         </View>
 
-        <Text style={styles.welcomeText}>Build consistency. Move safely.</Text>
-
-        <View style={styles.mainCard}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardLabel}>TODAY'S MISSION</Text>
-            <View style={styles.glassBadge}>
-              <Text style={styles.glassBadgeText}>{todayWorkout?.dayLabel || 'PLAN'}</Text>
+        <View style={styles.heroSection}>
+          <View style={styles.illustrationContainer}>
+            <View style={styles.yogaIllustration}>
+              <Text style={styles.illustrationEmoji}>🧘‍♀️</Text>
             </View>
           </View>
-          
-          <Text style={styles.cardTitle}>{todayWorkout?.title || 'Initialize Training'}</Text>
-          <Text style={styles.cardSubtitle}>
-            {todayWorkout ? getWorkoutLabel(todayWorkout) : 'Finish onboarding to generate your custom weekly plan.'}
-          </Text>
-
-          <Pressable
-            style={styles.coachButton}
-            onPress={() => navigation.navigate('FormCoach' as never)}
-          >
-            <Text style={styles.coachButtonText}>LAUNCH FORM COACH</Text>
-          </Pressable>
         </View>
 
-        <View style={styles.actionsRow}>
+        <View style={styles.todayCard}>
+          <View style={styles.todayHeader}>
+            <Text style={styles.todayLabel}>Today's Workout</Text>
+            <Text style={styles.todayDay}>{todayWorkout?.dayLabel || 'Get Started'}</Text>
+          </View>
+          <Text style={styles.todayTitle}>{todayWorkout?.title || 'Morning Workout'}</Text>
+          <Text style={styles.todayExercises}>
+            {todayWorkout ? getWorkoutLabel(todayWorkout) : 'Complete onboarding to see your plan'}
+          </Text>
+        </View>
+
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate('FormCoach' as never)}
+        >
+          <Text style={styles.primaryButtonText}>Start Workout</Text>
+        </Pressable>
+
+        <View style={styles.quickActions}>
           <Pressable
-            style={styles.actionItem}
+            style={styles.actionCard}
             onPress={() => navigation.navigate('Plan' as never)}
           >
-            <Text style={styles.actionLabel}>WEEKLY PLAN</Text>
-            <Text style={styles.actionSub}>View Cycle</Text>
+            <Text style={styles.actionIcon}>📅</Text>
+            <Text style={styles.actionLabel}>Weekly Plan</Text>
           </Pressable>
-          <View style={styles.actionSpacer} />
           <Pressable
-            style={styles.actionItem}
+            style={styles.actionCard}
             onPress={() => navigation.navigate('Library' as never)}
           >
-            <Text style={styles.actionLabel}>LIBRARY</Text>
-            <Text style={styles.actionSub}>Movement Prep</Text>
+            <Text style={styles.actionIcon}>📚</Text>
+            <Text style={styles.actionLabel}>Exercise Library</Text>
           </Pressable>
-        </View>
-
-        <View style={styles.techSection}>
-          <Text style={styles.sectionHeading}>TECHNICAL DATA</Text>
-          <View style={styles.syncRow}>
-            {CONTENT.map((item) => (
-              <Pressable key={item.label} onPress={() => openLink(item.url)} style={styles.syncChip}>
-                <Text style={styles.syncChipText}>{item.label}</Text>
-              </Pressable>
-            ))}
-          </View>
         </View>
       </ScrollView>
     </ScreenBackground>
@@ -138,178 +112,124 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 20,
+    padding: 24,
     paddingTop: 60,
     paddingBottom: 40,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 32,
   },
   title: {
     fontSize: 32,
-    fontWeight: '900',
+    fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
-    letterSpacing: 2,
+    letterSpacing: -0.5,
   },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(44, 230, 193, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(44, 230, 193, 0.2)',
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.accent,
-    marginRight: 6,
-  },
-  statusText: {
-    color: COLORS.accent,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  welcomeText: {
-    color: COLORS.textMuted,
-    fontSize: 14,
+  subtitle: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
     fontFamily: FONT.body,
+    marginTop: 4,
+  },
+  heroSection: {
+    alignItems: 'center',
     marginBottom: 32,
-    letterSpacing: 0.5,
   },
-  mainCard: {
-    backgroundColor: 'rgba(26, 30, 35, 0.7)',
-    borderRadius: RADIUS.xl,
-    padding: 28,
+  illustrationContainer: {
+    width: 200,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  yogaIllustration: {
+    width: 180,
+    height: 180,
+    backgroundColor: COLORS.surfaceElevated,
+    borderRadius: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  illustrationEmoji: {
+    fontSize: 80,
+  },
+  todayCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 20,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    marginBottom: 24,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
+    borderColor: COLORS.border,
+    ...SHADOWS.md,
   },
-  cardHeader: {
+  todayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
-  cardLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.accent,
-    letterSpacing: 2,
-    fontFamily: FONT.heading,
-  },
-  glassBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  glassBadgeText: {
+  todayLabel: {
+    fontSize: 12,
+    fontWeight: '600',
     color: COLORS.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  cardTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+  todayDay: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.accent,
+  },
+  todayTitle: {
+    fontSize: 22,
+    fontWeight: '700',
     color: COLORS.text,
     fontFamily: FONT.heading,
     marginBottom: 8,
   },
-  cardSubtitle: {
+  todayExercises: {
     fontSize: 14,
-    color: COLORS.textMuted,
+    color: COLORS.textSecondary,
     fontFamily: FONT.body,
     lineHeight: 20,
-    marginBottom: 24,
   },
-  coachButton: {
+  primaryButton: {
     backgroundColor: COLORS.accent,
     paddingVertical: 18,
+    borderRadius: RADIUS.full,
+    alignItems: 'center',
+    marginBottom: 24,
+    ...SHADOWS.md,
+  },
+  primaryButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: FONT.body,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    padding: 20,
     borderRadius: RADIUS.md,
     alignItems: 'center',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-  },
-  coachButtonText: {
-    color: COLORS.background,
-    fontSize: 15,
-    fontWeight: '900',
-    fontFamily: FONT.heading,
-    letterSpacing: 1.5,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    marginBottom: 32,
-  },
-  actionItem: {
-    flex: 1,
-    backgroundColor: 'rgba(26, 30, 35, 0.6)',
-    padding: 16,
-    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
-  actionSpacer: {
-    width: 16,
+  actionIcon: {
+    fontSize: 28,
+    marginBottom: 8,
   },
   actionLabel: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.text,
-    fontFamily: FONT.heading,
-    letterSpacing: 1,
-  },
-  actionSub: {
-    fontSize: 11,
-    color: COLORS.textMuted,
     fontFamily: FONT.body,
-    marginTop: 4,
-  },
-  techSection: {
-    marginBottom: 24,
-  },
-  sectionHeading: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.textDim,
-    letterSpacing: 2,
-    marginBottom: 12,
-    fontFamily: FONT.heading,
-  },
-  syncRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  syncChip: {
-    backgroundColor: 'rgba(26, 30, 35, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: RADIUS.sm,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  syncChipText: {
-    color: COLORS.accentStrong,
-    fontSize: 12,
-    fontWeight: '700',
-    fontFamily: FONT.heading,
-    letterSpacing: 1,
   },
 });

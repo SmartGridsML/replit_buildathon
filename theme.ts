@@ -1,33 +1,34 @@
 import { Platform } from 'react-native';
 
 export const COLORS = {
-  background: '#0B0D0F',
-  backgroundAlt: '#121518',
-  surface: '#1A1E23',
-  surfaceElevated: '#232930',
-  border: 'rgba(255, 255, 255, 0.05)',
-  accent: '#2CE6C1', // Neon Mint
-  accentStrong: '#35F2A6',
-  accentGlow: 'rgba(44, 230, 193, 0.4)',
-  text: '#FFFFFF',
-  textMuted: '#A0AEC0',
-  textDim: '#718096',
-  chip: 'rgba(44, 230, 193, 0.1)',
-  overlay: 'rgba(0, 0, 0, 0.85)',
+  background: '#FFFFFF',
+  backgroundAlt: '#FAFAFA',
+  surface: '#FFFFFF',
+  surfaceElevated: '#F5F5F5',
+  border: '#E5E5E5',
+  borderLight: '#F0F0F0',
+  accent: '#1A1A1A',
+  accentSoft: '#333333',
+  text: '#1A1A1A',
+  textSecondary: '#666666',
+  textMuted: '#999999',
+  textLight: '#CCCCCC',
+  white: '#FFFFFF',
+  black: '#000000',
+  success: '#22C55E',
+  error: '#EF4444',
 };
-
-export const GRADIENT = ['#0B0D0F', '#15191E', '#0B0D0F'];
 
 export const FONT = {
   heading: Platform.select({
-    ios: 'AvenirNext-CondensedBold',
-    android: 'sans-serif-condensed',
-    default: 'sans-serif-condensed',
+    ios: 'System',
+    android: 'sans-serif',
+    default: 'system-ui',
   }),
   body: Platform.select({
-    ios: 'AvenirNext-Medium',
+    ios: 'System',
     android: 'sans-serif',
-    default: 'sans-serif',
+    default: 'system-ui',
   }),
   mono: Platform.select({
     ios: 'Menlo',
@@ -37,8 +38,34 @@ export const FONT = {
 };
 
 export const RADIUS = {
+  xs: 8,
   sm: 12,
-  md: 18,
+  md: 16,
   lg: 24,
-  xl: 36,
+  xl: 32,
+  full: 999,
+};
+
+export const SHADOWS = {
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 5,
+  },
 };
