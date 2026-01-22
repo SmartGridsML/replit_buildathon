@@ -119,17 +119,6 @@ export default function Home() {
         </View>
 
         <View style={styles.techSection}>
-          <Text style={styles.sectionHeading}>SYNC AUDIO</Text>
-          <View style={styles.syncRow}>
-            {PLAYLISTS.map((item) => (
-              <Pressable key={item.label} onPress={() => openLink(item.url)} style={styles.syncChip}>
-                <Text style={styles.syncChipText}>{item.label}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.techSection}>
           <Text style={styles.sectionHeading}>TECHNICAL DATA</Text>
           <View style={styles.syncRow}>
             {CONTENT.map((item) => (
@@ -149,8 +138,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 24,
-    paddingTop: 50,
+    padding: 20,
+    paddingTop: 60,
     paddingBottom: 40,
   },
   header: {
@@ -197,16 +186,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   mainCard: {
-    backgroundColor: 'rgba(26, 30, 35, 0.8)',
+    backgroundColor: 'rgba(26, 30, 35, 0.7)',
     borderRadius: RADIUS.xl,
-    padding: 24,
+    padding: 28,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     marginBottom: 24,
     shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -248,13 +237,13 @@ const styles = StyleSheet.create({
   },
   coachButton: {
     backgroundColor: COLORS.accent,
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderRadius: RADIUS.md,
     alignItems: 'center',
     shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
   },
   coachButtonText: {
     color: COLORS.background,

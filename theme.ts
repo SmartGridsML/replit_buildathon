@@ -37,8 +37,8 @@ export const FONT = {
 };
 
 export const RADIUS = {
-  sm: 8,
-  md: 12,
-  lg: 20,
-  xl: 32,
+  sm: 12,
+  md: 18,
+  lg: 24,
+  xl: 36,
 };
