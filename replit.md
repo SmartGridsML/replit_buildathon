@@ -34,7 +34,22 @@ The app runs on port 5000 using Expo's web bundler:
 npm run web
 ```
 
+## Design System
+The app uses a **minimalist white and black** aesthetic:
+- **Background**: Clean white (#FFFFFF)
+- **Accent**: Dark black (#1A1A1A)
+- **Typography**: System fonts with clear hierarchy
+- **Components**: Rounded pill buttons, subtle borders, soft shadows
+- **Style**: iOS/Android native feel with elegant simplicity
+
+Key design elements:
+- Full-rounded (pill) buttons for primary actions
+- Subtle card shadows with light borders
+- Yoga/fitness emoji illustrations
+- Clean section headers with muted labels
+
 ## Development Notes
 - Uses Expo's Metro bundler for web (configured in app.json)
 - AsyncStorage is used for local data persistence (workout plans, preferences)
 - React Navigation handles both stack and tab-based navigation
+- Theme constants in `theme.ts` include COLORS, FONT, RADIUS, and SHADOWS
