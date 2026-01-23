@@ -1,0 +1,123 @@
+# FitForm - Comprehensive Mobile App Build Guide
+
+This document outlines end-to-end steps to build a full fitness mobile app, aligned to modern fitness app best practices and AI coaching trends. It also includes a gap analysis of the current repo against this checklist.
+
+## 1) Vision, Problem, and Success Metrics
+- Define the core user problem (ex: learn safe form + stay consistent).
+- Define primary metrics: weekly active users, workout completions, retention, and goal success rate.
+- Identify the sharp differentiation: real-time form coaching + adaptive plans.
+
+## 2) Market and User Research
+- Identify target users (beginners, returning athletes, rehab, home vs gym).
+- Audit competitors and note gaps (form feedback, adaptive programming, simplicity).
+- Validate interest with a quick landing page or interview script.
+
+## 3) Product Strategy and Core Loop
+- Core loop: Onboard -> plan -> workout -> feedback -> reward -> repeat.
+- Keep MVP narrow and valuable. Defer advanced logging and social features.
+- Define V1 vs V2: V1 adds coaching accuracy and habit formation, V2 adds social and analytics.
+
+## 4) Feature Scope (Comprehensive App)
+MVP features:
+- Onboarding: goals, equipment, injuries, experience
+- Weekly plan generator
+- Exercise library with descriptions and media
+- Form coaching (camera + cues)
+- Basic workout session flow
+
+V1 features:
+- Progress tracking (streaks, weekly completion)
+- Gamification (XP, levels, achievements)
+- Learn section for injury prevention and training basics
+- Music and content links
+
+V2+ features:
+- Cloud sync + account login
+- Personalized adaptations (predictive workouts)
+- Community and coaching programs
+- Payments and subscriptions
+
+## 5) IA and User Flows
+- App structure: Onboarding -> Tab navigation
+- Tabs: Home, Plan, Library, Learn, Coach
+- Workout flow: Start -> Timer + cues -> Complete -> Reward
+- Form coach flow: Select exercise -> Camera -> cues -> reps
+
+## 6) Design System and UX Standards
+- Brand: minimal white/black, high contrast, clean typography
+- Components: pill buttons, cards, chips, progress bars
+- Motion: subtle fade + slide on screen load, pressed scale on CTAs
+- Accessibility: contrast, readable type sizes, and labeled touch targets
+
+## 7) Data Model and Storage
+Core entities:
+- UserProfile, WeeklyPlan, Workout, Exercise
+- UserStats (XP, streaks, achievements)
+- WorkoutSession (completedAt, exerciseCount)
+- LearnTopic and ReadStatus
+
+Storage:
+- Local storage for MVP (AsyncStorage)
+- Cloud sync for V2 (auth + user data + analytics)
+
+## 8) Architecture and Tech
+- Expo + React Native + TypeScript
+- React Navigation (stack + tabs)
+- WebView or native vision SDK for form coaching
+- Modular data layer with tests for plan generation and gamification
+
+## 9) AI Coaching and Adaptation
+- Pose estimation on device for key lifts
+- Rep detection and form cues
+- Predictive plans based on adherence, recovery, and injury risk
+- Lightweight messages to the UI (exercise, reps, cues)
+
+## 10) Content Pipeline
+- Exercise library with images and descriptions
+- Educational topics (injuries, muscles, recovery, nutrition)
+- Optional: content CMS for scale later
+
+## 11) QA and Reliability
+- Unit tests for plan logic and gamification
+- Manual QA script for camera, onboarding, and workout session
+- Crash monitoring and performance tracking
+
+## 12) Launch and Growth
+- Soft launch with feedback loop
+- Track retention, drop-off, and session completion
+- Iterate on top friction points
+
+---
+
+# Current Repo Gap Analysis vs This Checklist
+
+## Implemented
+- Onboarding (name, goal, equipment, experience, injuries)
+- Weekly plan generator + regeneration
+- Exercise library with filters and detail modal
+- Learn section with educational content
+- Gamification system (XP, levels, achievements)
+- Workout session timer + completion flow
+- Progress tracking on Home
+- Tests for plan generation and gamification
+
+## Partial
+- Form coaching: current screen is static tips, not camera-based form feedback.
+- Content links: Spotify/YouTube links are not present in the current Home UI.
+- UI consistency: most screens are white/black, but the Library modal is dark.
+
+## Missing (from comprehensive scope)
+- Real-time form coaching via camera/WebView or native vision SDK
+- App icon, splash screen assets, and actual favicon in assets
+- Cloud sync and authentication
+- Analytics and crash reporting
+- Push notifications / reminders
+- Adjustable workout parameters (sets, reps, rest) or logged history
+- Offline media assets or bundled content
+- Admin or content pipeline for exercise media
+
+# Suggested Priority Fixes
+1) Restore camera-based Form Coach (WebView + MediaPipe or native SDK).
+2) Add app icon + splash assets.
+3) Add music/content links on Home.
+4) Add basic analytics event tracking.
