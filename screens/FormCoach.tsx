@@ -164,14 +164,15 @@ export default function FormCoach() {
             <View style={styles.cameraContainer}>
               {Platform.OS === 'web' ? (
                 <iframe
-                  src="/pose.html"
+                  src={`/pose.html?exercise=${selectedExercise}`}
                   style={{ width: '100%', height: '100%', border: 'none' }}
                   allow="camera; microphone"
+                  key={selectedExercise}
                 />
               ) : (
                 <WebView
                   ref={webViewRef}
-                  source={require('../assets/pose.html')}
+                  source={{ uri: `file:///android_asset/pose.html?exercise=${selectedExercise}` }}
                   style={styles.webview}
                   javaScriptEnabled
                   originWhitelist={['*']}

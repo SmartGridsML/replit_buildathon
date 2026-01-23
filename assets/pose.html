@@ -86,13 +86,19 @@
       const statusEl = document.getElementById('status');
       const buttons = document.querySelectorAll('button[data-exercise]');
 
-      let exercise = 'squat';
+      const urlParams = new URLSearchParams(window.location.search);
+      let exercise = urlParams.get('exercise') || 'squat';
       let repCount = 0;
       let phase = 'up';
       let lastSent = 0;
       let lastRepSent = -1;
 
       buttons.forEach((button) => {
+        if (button.dataset.exercise === exercise) {
+          button.classList.add('active');
+        } else {
+          button.classList.remove('active');
+        }
         button.addEventListener('click', () => {
           buttons.forEach((btn) => btn.classList.remove('active'));
           button.classList.add('active');
