@@ -107,8 +107,8 @@ export default function Onboarding() {
         style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>FitForm</Text>
-          <Text style={styles.subtitle}>Stay healthy and strong</Text>
+          <Text style={styles.title}>Pinnacle</Text>
+          <Text style={styles.subtitle}>Reach your peak — body, mind & spirit</Text>
         </View>
 
         <View style={styles.illustrationContainer}>

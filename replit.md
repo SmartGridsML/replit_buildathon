@@ -1,7 +1,7 @@
-# FitForm - Fitness Planning App
+# Pinnacle - Reach Your Peak
 
 ## Overview
-FitForm is a React Native/Expo fitness planning application that helps users create personalized workout plans based on their goals, equipment access, experience level, and any injuries. The app features guided workout sessions with timers, progress tracking, form coaching, and educational content about muscle groups and injury prevention.
+Pinnacle is a React Native/Expo wellness application that helps users reach their pinnacle — physically, mentally, and intellectually. The app provides personalized workout plans, guided exercise sessions with timers, AI-powered form coaching, and educational content about fitness, nutrition, and recovery. The core ethos is empowering users to become the best version of themselves across body, mind, and spirit.
 
 ## Tech Stack
 - **Framework**: React Native with Expo SDK 54

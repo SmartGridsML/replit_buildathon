@@ -100,7 +100,7 @@ function Tabs() {
 function LoadingScreen() {
   return (
     <View style={styles.loading}>
-      <Text style={styles.loadingText}>FitForm</Text>
+      <Text style={styles.loadingText}>Pinnacle</Text>
     </View>
   );
 }
