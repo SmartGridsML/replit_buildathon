@@ -207,6 +207,48 @@ export default function Home() {
           </View>
         </View>
 
+        <Animated.View style={[styles.heroCard, { transform: [{ scale: heroScale }] }]}>
+          <View style={styles.heroHeader}>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeText}>TODAY</Text>
+            </View>
+            <Text style={styles.heroDay}>{todayWorkout?.dayLabel || 'Ready'}</Text>
+          </View>
+          <Text style={styles.heroTitle}>{todayWorkout?.title || 'Get Started'}</Text>
+          {exerciseChips.length > 0 && (
+            <View style={styles.chipRow}>
+              {exerciseChips.map((name, i) => (
+                <View key={i} style={styles.exerciseChip}>
+                  <Text style={styles.chipText}>{name}</Text>
+                </View>
+              ))}
+              {(todayWorkout?.exerciseIds.length || 0) > 4 && (
+                <View style={styles.exerciseChip}>
+                  <Text style={styles.chipText}>+{(todayWorkout?.exerciseIds.length || 0) - 4}</Text>
+                </View>
+              )}
+            </View>
+          )}
+          {!todayWorkout && (
+            <Text style={styles.heroSubtext}>Complete onboarding to see your plan</Text>
+          )}
+        </Animated.View>
+
+        <AnimatedPressable
+          style={[styles.primaryButton, !todayWorkout && styles.buttonDisabled]}
+          onPress={() => {
+            if (todayWorkout) {
+              (navigation as any).navigate('WorkoutSession', { workout: todayWorkout });
+            }
+          }}
+          disabled={!todayWorkout}
+          accessibilityLabel="Start today's workout"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !todayWorkout }}
+        >
+          <Text style={styles.primaryButtonText}>Start Workout</Text>
+        </AnimatedPressable>
+
         {dailyQuote && (
           <View style={styles.dailyFocusSection}>
             <Text style={styles.sectionLabel}>Daily Focus</Text>
@@ -266,48 +308,6 @@ export default function Home() {
             {plan ? `${Math.round(weeklyProgress * (plan.workouts?.length || 3))} of ${plan.workouts?.length || 3} workouts this week` : 'Start your first workout!'}
           </Text>
         </View>
-
-        <Animated.View style={[styles.heroCard, { transform: [{ scale: heroScale }] }]}>
-          <View style={styles.heroHeader}>
-            <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeText}>TODAY</Text>
-            </View>
-            <Text style={styles.heroDay}>{todayWorkout?.dayLabel || 'Ready'}</Text>
-          </View>
-          <Text style={styles.heroTitle}>{todayWorkout?.title || 'Get Started'}</Text>
-          {exerciseChips.length > 0 && (
-            <View style={styles.chipRow}>
-              {exerciseChips.map((name, i) => (
-                <View key={i} style={styles.exerciseChip}>
-                  <Text style={styles.chipText}>{name}</Text>
-                </View>
-              ))}
-              {(todayWorkout?.exerciseIds.length || 0) > 4 && (
-                <View style={styles.exerciseChip}>
-                  <Text style={styles.chipText}>+{(todayWorkout?.exerciseIds.length || 0) - 4}</Text>
-                </View>
-              )}
-            </View>
-          )}
-          {!todayWorkout && (
-            <Text style={styles.heroSubtext}>Complete onboarding to see your plan</Text>
-          )}
-        </Animated.View>
-
-        <AnimatedPressable
-          style={[styles.primaryButton, !todayWorkout && styles.buttonDisabled]}
-          onPress={() => {
-            if (todayWorkout) {
-              (navigation as any).navigate('WorkoutSession', { workout: todayWorkout });
-            }
-          }}
-          disabled={!todayWorkout}
-          accessibilityLabel="Start today's workout"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !todayWorkout }}
-        >
-          <Text style={styles.primaryButtonText}>Start Workout</Text>
-        </AnimatedPressable>
 
         <View style={styles.contentSection}>
           <Text style={styles.sectionLabel}>Get Inspired</Text>
