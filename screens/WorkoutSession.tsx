@@ -6,9 +6,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Workout } from '../types';
 import { EXERCISES } from '../data/exercises';
 import { STORAGE_KEYS } from '../data/storage';
+import { getPreWorkoutMantra } from '../data/mindsetQuotes';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 import AnimatedPressable from '../components/AnimatedPressable';
+import FocusCard from '../components/FocusCard';
 
 interface RouteParams {
   workout: Workout;
@@ -24,6 +26,8 @@ export default function WorkoutSession() {
     EXERCISES.find(e => e.id === id)
   ).filter(Boolean) || [];
 
+  const [showPreFocus, setShowPreFocus] = useState(true);
+  const [preMantra] = useState(getPreWorkoutMantra());
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timer, setTimer] = useState(30);
   const [maxTime, setMaxTime] = useState(30);
@@ -32,6 +36,7 @@ export default function WorkoutSession() {
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
   
   const progressAnim = useRef(new Animated.Value(1)).current;
+  const preFocusFade = useRef(new Animated.Value(1)).current;
 
   const currentExercise = exercises[currentIndex];
   const totalExercises = exercises.length;
@@ -144,6 +149,16 @@ export default function WorkoutSession() {
     setIsRunning(false);
   };
 
+  const dismissPreFocus = () => {
+    Animated.timing(preFocusFade, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowPreFocus(false);
+    });
+  };
+
   if (!workout || exercises.length === 0) {
     return (
       <ScreenBackground>
@@ -153,6 +168,31 @@ export default function WorkoutSession() {
             <Text style={styles.goBackButtonText}>Go Back</Text>
           </Pressable>
         </View>
+      </ScreenBackground>
+    );
+  }
+
+  if (showPreFocus) {
+    return (
+      <ScreenBackground>
+        <Animated.View style={[styles.preFocusContainer, { opacity: preFocusFade }]}>
+          <View style={styles.preFocusContent}>
+            <Text style={styles.preFocusLabel}>FOCUS</Text>
+            <FocusCard 
+              mantra={preMantra} 
+              variant="pre"
+              subtitle="Tap to begin"
+            />
+          </View>
+          <AnimatedPressable 
+            style={styles.beginButton} 
+            onPress={dismissPreFocus}
+            accessibilityLabel="Begin workout"
+            accessibilityRole="button"
+          >
+            <Text style={styles.beginButtonText}>I'm Ready</Text>
+          </AnimatedPressable>
+        </Animated.View>
       </ScreenBackground>
     );
   }
@@ -521,5 +561,39 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 15,
     fontWeight: '600',
+  },
+  preFocusContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  preFocusContent: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  preFocusLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textMuted,
+    letterSpacing: 4,
+    marginBottom: 24,
+    fontFamily: FONT.heading,
+  },
+  beginButton: {
+    backgroundColor: COLORS.white,
+    paddingVertical: 18,
+    paddingHorizontal: 48,
+    borderRadius: RADIUS.full,
+    borderWidth: 2,
+    borderColor: COLORS.accent,
+    ...SHADOWS.md,
+  },
+  beginButtonText: {
+    color: COLORS.accent,
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: FONT.body,
   },
 });
