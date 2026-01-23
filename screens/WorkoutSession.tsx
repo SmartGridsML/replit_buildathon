@@ -175,13 +175,21 @@ export default function WorkoutSession() {
   if (showPreFocus) {
     return (
       <ScreenBackground>
-        <Animated.View style={[styles.preFocusContainer, { opacity: preFocusFade }]}>
+        <Animated.View style={[styles.preFocusContainer, { opacity: preFocusFade, paddingTop: Math.max(insets.top, 20) + 20 }]}>
+          <View style={styles.preFocusHeader}>
+            <AnimatedPressable onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Text style={styles.backArrow}>←</Text>
+            </AnimatedPressable>
+            <AnimatedPressable onPress={dismissPreFocus}>
+              <Text style={styles.skipText}>Skip</Text>
+            </AnimatedPressable>
+          </View>
           <View style={styles.preFocusContent}>
             <Text style={styles.preFocusLabel}>FOCUS</Text>
             <FocusCard 
               mantra={preMantra} 
               variant="pre"
-              subtitle="Tap to begin"
+              subtitle="Take a breath. Get ready."
             />
           </View>
           <AnimatedPressable 
@@ -564,14 +572,27 @@ const styles = StyleSheet.create({
   },
   preFocusContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 32,
   },
+  preFocusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 40,
+  },
+  skipText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
+  },
   preFocusContent: {
+    flex: 1,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 40,
+    justifyContent: 'center',
+    paddingBottom: 60,
   },
   preFocusLabel: {
     fontSize: 14,

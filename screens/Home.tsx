@@ -339,6 +339,16 @@ export default function Home() {
             </Text>
           </View>
         </View>
+
+        <View style={styles.footerLinks}>
+          <AnimatedPressable 
+            onPress={() => (navigation as any).navigate('Credits')}
+            accessibilityLabel="View credits and licenses"
+            accessibilityRole="button"
+          >
+            <Text style={styles.footerLink}>Credits & Licenses</Text>
+          </AnimatedPressable>
+        </View>
       </Animated.ScrollView>
     </ScreenBackground>
   );
@@ -702,5 +712,16 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.textMuted,
     fontFamily: FONT.body,
+  },
+  footerLinks: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  footerLink: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
+    textDecorationLine: 'underline',
   },
 });
