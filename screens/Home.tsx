@@ -10,6 +10,8 @@ import { loadUserStats, getLevelFromXP, UserStats } from '../data/gamification';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 import AnimatedPressable from '../components/AnimatedPressable';
+import QuoteCard from '../components/QuoteCard';
+import { useDailyFocus } from '../hooks/useDailyFocus';
 
 const CONTENT_LINKS = [
   { 
@@ -97,6 +99,7 @@ function getGreeting(): string {
 export default function Home() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { dailyQuote, refreshQuote } = useDailyFocus();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
@@ -203,6 +206,17 @@ export default function Home() {
             </AnimatedPressable>
           </View>
         </View>
+
+        {dailyQuote && (
+          <View style={styles.dailyFocusSection}>
+            <Text style={styles.sectionLabel}>Daily Focus</Text>
+            <QuoteCard 
+              quote={dailyQuote} 
+              variant="compact" 
+              onPress={refreshQuote}
+            />
+          </View>
+        )}
 
         <AnimatedPressable 
           style={styles.xpCard}
@@ -340,6 +354,9 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
+    marginBottom: 20,
+  },
+  dailyFocusSection: {
     marginBottom: 20,
   },
   greetingRow: {

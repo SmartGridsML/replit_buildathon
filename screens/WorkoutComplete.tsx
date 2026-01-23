@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Workout } from '../types';
 import { recordWorkoutComplete, Achievement } from '../data/gamification';
+import { getPostWorkoutReflection } from '../data/mindsetQuotes';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
+import FocusCard from '../components/FocusCard';
 
 interface RouteParams {
   workout: Workout;
@@ -23,6 +25,7 @@ export default function WorkoutComplete() {
   const [newLevel, setNewLevel] = useState(1);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.8));
+  const [reflection] = useState(getPostWorkoutReflection());
 
   useEffect(() => {
     const recordCompletion = async () => {
@@ -103,11 +106,11 @@ export default function WorkoutComplete() {
           </View>
         )}
 
-        <View style={styles.motivationCard}>
-          <Text style={styles.motivationText}>
-            "Consistency is what transforms average into excellence."
-          </Text>
-        </View>
+        <FocusCard 
+          mantra={reflection} 
+          variant="post"
+          subtitle="You earned this moment"
+        />
 
         <Pressable style={styles.doneButton} onPress={handleDone}>
           <Text style={styles.doneButtonText}>Done</Text>
@@ -255,20 +258,9 @@ const styles = StyleSheet.create({
     color: COLORS.success,
     fontFamily: FONT.body,
   },
-  motivationCard: {
-    backgroundColor: COLORS.surfaceElevated,
-    borderRadius: RADIUS.lg,
-    padding: 20,
+  reflectionContainer: {
     width: '100%',
     marginBottom: 24,
-  },
-  motivationText: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    fontFamily: FONT.body,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    lineHeight: 22,
   },
   doneButton: {
     backgroundColor: COLORS.accent,
