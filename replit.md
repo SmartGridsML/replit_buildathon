@@ -50,15 +50,16 @@ FitForm is a React Native/Expo fitness planning application that helps users cre
 
 ## Core Features
 1. **Onboarding** - Collects name, goal, equipment, experience, injuries
-2. **Personalized Dashboard** - "Hi {name}" greeting with XP level, workout stats, weekly progress
+2. **Personalized Dashboard** - "Hi {name}" greeting with XP level, workout stats, weekly progress, inspiration links (Spotify/YouTube)
 3. **Gamification System** - 13 achievements, 10 levels, XP rewards for workouts and learning
 4. **Weekly Plan Generator** - Creates personalized 3-5 day workout schedules
-5. **Workout Session** - Guided timer with exercise progression and rest periods
+5. **Workout Session** - Guided timer with animated circular progress, exercise progression and rest periods
 6. **Progress Tracking** - Completed workouts count, day streaks, weekly progress bar
-7. **Exercise Library** - Filterable by category (upper, lower, core, mobility)
+7. **Exercise Library** - Filterable by category (upper, lower, core, mobility) with polished white-theme modals
 8. **Learn Section** - Educational content about muscle groups, injury prevention, recovery, nutrition (11 topics)
-9. **Form Coach** - Pose detection with real-time feedback cues
+9. **Form Coach** - Camera-based AI pose detection with MediaPipe, real-time rep counting and form feedback
 10. **Achievements Screen** - View badges, level progress, and stats
+11. **Content Links** - Direct links to Spotify workout playlists and YouTube form tutorials
 
 ## Gamification Details
 ### Levels (10 total)
