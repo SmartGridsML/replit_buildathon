@@ -16,6 +16,7 @@ Pinnacle is a React Native/Expo wellness application that helps users reach thei
 ├── App.tsx              # Main app entry point
 ├── navigation/          # Navigation configuration
 ├── screens/             # Screen components
+│   ├── Landing.tsx      # Bold landing page with Pinnacle branding
 │   ├── Home.tsx         # Dashboard with personalized greeting and stats
 │   ├── Plan.tsx         # Weekly workout plan
 │   ├── Library.tsx      # Filterable exercise library
@@ -25,6 +26,8 @@ Pinnacle is a React Native/Expo wellness application that helps users reach thei
 │   ├── WorkoutComplete.tsx # Completion celebration with XP rewards
 │   ├── Achievements.tsx # Gamification: levels, badges, XP
 │   └── Onboarding.tsx   # User profile setup with name
+├── lib/                 # External integrations
+│   └── spotify.ts       # Spotify API client (Replit integration)
 ├── components/          # Reusable UI components
 │   ├── ScreenBackground.tsx
 │   ├── PlanCard.tsx

@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Landing from '../screens/Landing';
 import Onboarding from '../screens/Onboarding';
 import Home from '../screens/Home';
 import Plan from '../screens/Plan';
@@ -100,7 +101,7 @@ function Tabs() {
 function LoadingScreen() {
   return (
     <View style={styles.loading}>
-      <Text style={styles.loadingText}>Pinnacle</Text>
+      <Text style={styles.loadingText}>PINNACLE</Text>
     </View>
   );
 }
@@ -126,6 +127,7 @@ export default function Navigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {!hasProfile && <Stack.Screen name="Landing" component={Landing} />}
         {!hasProfile && <Stack.Screen name="Onboarding" component={Onboarding} />}
         <Stack.Screen name="Tabs" component={Tabs} />
         <Stack.Screen name="WorkoutSession" component={WorkoutSession} />
@@ -144,9 +146,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   loadingText: {
-    color: COLORS.text,
-    fontSize: 28,
-    fontWeight: '700',
+    color: '#000000',
+    fontSize: 42,
+    fontWeight: '900',
     fontFamily: FONT.heading,
+    letterSpacing: 10,
   },
 });
