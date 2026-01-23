@@ -98,8 +98,8 @@ export default function Library() {
 
         {selected && (
           <Modal animationType="fade" transparent visible>
-            <View style={styles.glassBackdrop}>
-              <View style={styles.glassCard}>
+            <View style={styles.modalBackdrop}>
+              <Animated.View style={[styles.modalCard, { transform: [{ scale: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }], opacity: modalAnim }]}>
                 <View style={styles.modalImageContainer}>
                   <Image source={{ uri: selected.image }} style={styles.modalImage} />
                   <AnimatedPressable style={styles.closeButton} onPress={() => setSelected(null)}>
@@ -107,22 +107,22 @@ export default function Library() {
                   </AnimatedPressable>
                 </View>
                 
-                <View style={styles.glassContent}>
-                  <Text style={styles.glassTitle}>{selected.name}</Text>
-                  <View style={styles.glassTagRow}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>{selected.name}</Text>
+                  <View style={styles.modalTagRow}>
                     {selected.tags.map(tag => (
-                      <View key={tag} style={styles.glassTag}>
-                        <Text style={styles.glassTagText}>{tag}</Text>
+                      <View key={tag} style={styles.modalTag}>
+                        <Text style={styles.modalTagText}>{tag}</Text>
                       </View>
                     ))}
                   </View>
-                  <Text style={styles.glassDescription}>{selected.description}</Text>
+                  <Text style={styles.modalDescription}>{selected.description}</Text>
                   
-                  <AnimatedPressable style={styles.glassButton} onPress={() => setSelected(null)}>
-                    <Text style={styles.glassButtonText}>Close</Text>
+                  <AnimatedPressable style={styles.dismissButton} onPress={() => setSelected(null)}>
+                    <Text style={styles.dismissButtonText}>Close</Text>
                   </AnimatedPressable>
                 </View>
-              </View>
+              </Animated.View>
             </View>
           </Modal>
         )}

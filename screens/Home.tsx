@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Animated, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,25 @@ import { loadUserStats, getLevelFromXP, UserStats } from '../data/gamification';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
 import ScreenBackground from '../components/ScreenBackground';
 import AnimatedPressable from '../components/AnimatedPressable';
+
+const CONTENT_LINKS = [
+  { 
+    id: 'spotify',
+    title: 'Workout Playlist',
+    subtitle: 'Get pumped with beats',
+    icon: '🎵',
+    url: 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP',
+    color: '#1DB954',
+  },
+  { 
+    id: 'youtube',
+    title: 'Form Tutorials',
+    subtitle: 'Watch and learn',
+    icon: '📺',
+    url: 'https://www.youtube.com/results?search_query=proper+exercise+form+tutorial',
+    color: '#FF0000',
+  },
+];
 
 const DAY_MAP: Record<number, string> = {
   0: 'Sun',
@@ -275,6 +294,27 @@ export default function Home() {
         >
           <Text style={styles.primaryButtonText}>Start Workout</Text>
         </AnimatedPressable>
+
+        <View style={styles.contentSection}>
+          <Text style={styles.sectionLabel}>Get Inspired</Text>
+          <View style={styles.contentRow}>
+            {CONTENT_LINKS.map(link => (
+              <AnimatedPressable
+                key={link.id}
+                style={styles.contentCard}
+                onPress={() => Linking.openURL(link.url)}
+                accessibilityLabel={`Open ${link.title}`}
+                accessibilityRole="link"
+              >
+                <View style={[styles.contentIcon, { backgroundColor: link.color + '15' }]}>
+                  <Text style={styles.contentIconText}>{link.icon}</Text>
+                </View>
+                <Text style={styles.contentTitle}>{link.title}</Text>
+                <Text style={styles.contentSubtitle}>{link.subtitle}</Text>
+              </AnimatedPressable>
+            ))}
+          </View>
+        </View>
 
         <View style={styles.tipCard}>
           <Text style={styles.tipIcon}>💡</Text>
@@ -596,5 +636,54 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 12,
     fontWeight: '600',
+  },
+  contentSection: {
+    marginBottom: 20,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  contentRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  contentCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  contentIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  contentIconText: {
+    fontSize: 22,
+  },
+  contentTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontFamily: FONT.heading,
+    marginBottom: 2,
+  },
+  contentSubtitle: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    fontFamily: FONT.body,
   },
 });
