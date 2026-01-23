@@ -8,7 +8,9 @@ Pinnacle is a React Native/Expo wellness application that helps users reach thei
 - **Web bundler**: Metro (Expo's built-in bundler)
 - **Language**: TypeScript
 - **Navigation**: React Navigation (native stack + bottom tabs)
-- **Storage**: AsyncStorage for local data persistence
+- **Storage**: AsyncStorage for local data persistence + PostgreSQL for auth
+- **Backend**: Express server with Replit Auth (OIDC)
+- **Database**: PostgreSQL with Drizzle ORM
 - **Testing**: Jest with ts-jest
 
 ## Project Structure
@@ -38,6 +40,17 @@ Pinnacle is a React Native/Expo wellness application that helps users reach thei
 │   ├── gamification.ts # XP, levels, achievements system
 │   ├── planGenerator.ts # Workout plan generation logic
 │   └── storage.ts      # AsyncStorage keys
+├── server/             # Backend Express server
+│   ├── index.ts        # Server entry point (port 3001)
+│   ├── db.ts           # Drizzle database connection
+│   └── replit_integrations/auth/  # Replit Auth integration
+│       ├── index.ts    # Auth module exports
+│       ├── replitAuth.ts # OIDC passport setup
+│       ├── storage.ts  # User database operations
+│       └── routes.ts   # Auth API endpoints
+├── shared/             # Shared types and schemas
+│   ├── schema.ts       # Drizzle schema exports
+│   └── models/auth.ts  # User and session tables
 ├── __tests__/          # Jest unit tests
 │   ├── gamification.test.ts
 │   └── planGenerator.test.ts
@@ -45,6 +58,7 @@ Pinnacle is a React Native/Expo wellness application that helps users reach thei
 ├── assets/             # Static assets (HTML for poses)
 ├── types.ts            # TypeScript type definitions
 ├── theme.ts            # App theming/styling constants
+├── drizzle.config.ts   # Drizzle ORM configuration
 ├── jest.config.js      # Jest configuration
 ├── app.json            # Expo configuration
 ├── metro.config.js     # Metro bundler configuration

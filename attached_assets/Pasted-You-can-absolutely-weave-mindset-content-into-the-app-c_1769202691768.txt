@@ -1,0 +1,109 @@
+You can absolutely weave “mindset” content into the app **cleanly**—and you can do it in a way that’s **low-risk for licensing** if you stick to **Public Domain / CC0** sources and keep attribution metadata.
+
+## How to integrate quotes + graphics without ruining the minimalist vibe
+
+### Where it fits in the app (minimal, not cringe)
+
+1. **Home header (Daily Focus)**
+   One short quote + author, tappable to expand.
+2. **Pre-workout “Focus card” (10 seconds)**
+   “Breathe. Brace. Control.” + a simple motif (dot-grid, ring, bar).
+3. **Post-workout “Reflection”**
+   1 line: “You showed up today.” + optional longer quote.
+4. **Share card (optional)**
+   Generate a clean black/white poster image to share (no feed, no doomscroll).
+
+### Visual motifs that match your black/white style
+
+* **Duotone portraits** (pure black silhouette + soft grain)
+* **Progress ring** as a design “signature”
+* **3-word mantras** (“Slow. Strong. Stable.”) as section titles
+* Subtle **halftone / film grain** background to avoid “empty white”
+
+## Licensing: the lowest-hassle sources
+
+### Safest “no drama” rule
+
+Use only:
+
+* **Public Domain** portraits / text
+* **CC0** images
+
+This avoids ShareAlike obligations and complicated attribution chains.
+
+### Great sources
+
+1. **Smithsonian Open Access (CC0)** – millions of items you can use freely, no permission required. ([Smithsonian Institution][1])
+2. **Wikimedia Commons** – lots of portraits are Public Domain or free licenses (but you must check each file’s license). ([Wikimedia Commons][2])
+3. **Openverse** – search and filter by license (including `cc0` and `pdm`). ([openverse.org][3])
+
+### What to avoid for “no hassle”
+
+* **Wikiquote text as your quote database**: Wikiquote content is **CC BY-SA** (ShareAlike), which can be annoying for apps (you’d need attribution + sharealike compliance for derived content). ([Wikiquote][4])
+  If you *do* use it, it’s doable—just not “lowest hassle.”
+
+## Important: quote accuracy (your Emerson example)
+
+That “purpose of life is not to be happy…” line is **commonly misattributed** (often traced to Leo Rosten variants). Wikiquote and Quote Investigator both flag this. ([Wikiquote][5])
+So: either use verified quotes, or label as **“Attributed”**.
+
+## A clean implementation plan (practical)
+
+### 1) Store a tiny curated “Mindset Pack” locally
+
+Create a JSON file like:
+
+```json
+{
+  "id": "emerson-001",
+  "text": "…",
+  "author": "Ralph Waldo Emerson",
+  "attribution": "Public Domain / Verified source",
+  "image": "emerson_portrait_cc0.jpg",
+  "imageLicense": "CC0",
+  "imageSource": "Smithsonian Open Access",
+  "sourceUrl": "..."
+}
+```
+
+Even if CC0 doesn’t require attribution, keeping this metadata makes your life easier.
+
+### 2) Convert portraits into your exact black/white style
+
+Take a CC0/PD portrait and run a simple processing step (on-device or build-time):
+
+* grayscale → increase contrast → posterize → add grain → optional vignette
+  This makes mixed-source images look like a single coherent brand.
+
+### 3) Generate “quote posters” on the fly
+
+In React Native/Expo you can render a “QuoteCard” view and export it as an image for sharing (later). For MVP, just show the card.
+
+### 4) Add a “Credits & Licenses” screen
+
+One screen listing:
+
+* image title, author/creator (if provided)
+* license (CC0/PD)
+* source link
+  This keeps you clean if you ever include anything that isn’t CC0.
+
+## If you want: I can give you a Codex prompt
+
+Tell me whether you want:
+
+* **Local pack only** (fastest, no network), or
+* **Openverse API fetch** filtered to `cc0`/`pdm` (more scalable but network + caching)
+
+…and I’ll write a single pasteable Codex instruction that generates:
+
+* `mindsetQuotes.json`
+* `QuoteCard.tsx` (your black/white layout)
+* `DailyFocus` hook (rotates quote daily)
+* `CreditsScreen.tsx` populated from metadata
+
+[1]: https://www.si.edu/openaccess?utm_source=chatgpt.com "Smithsonian Open Access"
+[2]: https://commons.wikimedia.org/wiki/Commons%3ALicensing?utm_source=chatgpt.com "Commons:Licensing - Wikimedia Commons"
+[3]: https://openverse.org/en-gb?utm_source=chatgpt.com "Openly Licensed Images, Audio and More"
+[4]: https://en.wikiquote.org/wiki/Category%3ACreative_Commons_Attribution-ShareAlike_License?utm_source=chatgpt.com "Category:Creative Commons Attribution-ShareAlike License"
+[5]: https://en.wikiquote.org/wiki/Ralph_Waldo_Emerson?utm_source=chatgpt.com "Ralph Waldo Emerson"
