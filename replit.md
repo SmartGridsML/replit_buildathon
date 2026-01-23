@@ -19,26 +19,32 @@ Pinnacle is a React Native/Expo wellness application that helps users reach thei
 ├── navigation/          # Navigation configuration
 ├── screens/             # Screen components
 │   ├── Landing.tsx      # Bold landing page with Pinnacle branding
-│   ├── Home.tsx         # Dashboard with personalized greeting and stats
+│   ├── Home.tsx         # Dashboard with personalized greeting, stats, and daily focus
 │   ├── Plan.tsx         # Weekly workout plan
 │   ├── Library.tsx      # Filterable exercise library
 │   ├── Learn.tsx        # Educational content about muscles/injuries
 │   ├── FormCoach.tsx    # Pose detection with feedback
-│   ├── WorkoutSession.tsx # Guided workout with timer
-│   ├── WorkoutComplete.tsx # Completion celebration with XP rewards
+│   ├── WorkoutSession.tsx # Guided workout with timer and pre-workout focus
+│   ├── WorkoutComplete.tsx # Completion celebration with XP rewards and reflection
 │   ├── Achievements.tsx # Gamification: levels, badges, XP
+│   ├── Credits.tsx      # License attribution for open-source content
 │   └── Onboarding.tsx   # User profile setup with name
 ├── lib/                 # External integrations
 │   └── spotify.ts       # Spotify API client (Replit integration)
 ├── components/          # Reusable UI components
 │   ├── ScreenBackground.tsx
 │   ├── PlanCard.tsx
-│   └── ExerciseCard.tsx
+│   ├── ExerciseCard.tsx
+│   ├── QuoteCard.tsx    # Inspirational quote display
+│   └── FocusCard.tsx    # Pre/post workout focus mantras
+├── hooks/               # Custom React hooks
+│   └── useDailyFocus.ts # Daily rotating quote hook
 ├── data/               # Data utilities and storage logic
 │   ├── exercises.ts    # Exercise database (15 exercises)
 │   ├── learnContent.ts # Educational articles about fitness
 │   ├── gamification.ts # XP, levels, achievements system
 │   ├── planGenerator.ts # Workout plan generation logic
+│   ├── mindsetQuotes.ts # 26+ curated CC0/Public Domain quotes
 │   └── storage.ts      # AsyncStorage keys
 ├── server/             # Backend Express server
 │   ├── index.ts        # Server entry point (port 3001)
@@ -70,13 +76,15 @@ Pinnacle is a React Native/Expo wellness application that helps users reach thei
 2. **Personalized Dashboard** - "Hi {name}" greeting with XP level, workout stats, weekly progress, inspiration links (Spotify/YouTube)
 3. **Gamification System** - 13 achievements, 10 levels, XP rewards for workouts and learning
 4. **Weekly Plan Generator** - Creates personalized 3-5 day workout schedules
-5. **Workout Session** - Guided timer with animated circular progress, exercise progression and rest periods
+5. **Workout Session** - Pre-workout focus screen with mantra, guided timer with animated circular progress, exercise progression and rest periods
 6. **Progress Tracking** - Completed workouts count, day streaks, weekly progress bar
 7. **Exercise Library** - Filterable by category (upper, lower, core, mobility) with polished white-theme modals
 8. **Learn Section** - Educational content about muscle groups, injury prevention, recovery, nutrition (11 topics)
 9. **Form Coach** - Camera-based AI pose detection with MediaPipe, real-time rep counting and form feedback
 10. **Achievements Screen** - View badges, level progress, and stats
 11. **Content Links** - Direct links to Spotify workout playlists and YouTube form tutorials
+12. **Mindset Content** - Daily rotating quotes, pre-workout mantras, post-workout reflections
+13. **Credits Screen** - Full attribution for open-source quote sources (CC0/Public Domain)
 
 ## Gamification Details
 ### Levels (10 total)
