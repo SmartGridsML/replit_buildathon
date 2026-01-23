@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Linking, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONT, RADIUS, SHADOWS } from '../theme';
@@ -86,12 +86,28 @@ export default function Landing() {
           </View>
 
           <AnimatedPressable
-            style={styles.ctaButton}
-            onPress={() => (navigation as any).navigate('Onboarding')}
-            accessibilityLabel="Get started with Pinnacle"
+            style={styles.googleButton}
+            onPress={() => {
+              if (Platform.OS === 'web') {
+                window.location.href = '/api/login';
+              } else {
+                Linking.openURL('/api/login');
+              }
+            }}
+            accessibilityLabel="Sign up with Google"
             accessibilityRole="button"
           >
-            <Text style={styles.ctaText}>Begin Your Journey</Text>
+            <Text style={styles.googleIcon}>G</Text>
+            <Text style={styles.googleText}>Sign up with Google</Text>
+          </AnimatedPressable>
+
+          <AnimatedPressable
+            style={styles.ctaButton}
+            onPress={() => (navigation as any).navigate('Onboarding')}
+            accessibilityLabel="Continue as guest"
+            accessibilityRole="button"
+          >
+            <Text style={styles.ctaText}>Continue as Guest</Text>
           </AnimatedPressable>
 
           <Text style={styles.footerText}>Your transformation starts here</Text>
@@ -167,19 +183,42 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     fontFamily: FONT.body,
   },
+  googleButton: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.white,
+    paddingVertical: 18,
+    borderRadius: RADIUS.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 12,
+    ...SHADOWS.md,
+  },
+  googleIcon: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#4285F4',
+  },
+  googleText: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: FONT.body,
+  },
   ctaButton: {
     backgroundColor: COLORS.accent,
-    paddingVertical: 20,
+    paddingVertical: 18,
     borderRadius: RADIUS.full,
     alignItems: 'center',
     marginBottom: 20,
-    ...SHADOWS.lg,
   },
   ctaText: {
     color: COLORS.white,
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
     fontFamily: FONT.body,
   },
   footerText: {
